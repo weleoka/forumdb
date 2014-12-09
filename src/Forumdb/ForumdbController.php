@@ -11,6 +11,9 @@ class ForumdbController implements \Anax\DI\IInjectionAware
 
 public function initialize()
     {
+        $this->forum = new \Weleoka\Forumdb\Forum();
+        $this->forum->setDI($this->di);
+
         $this->questions = new \Weleoka\Forumdb\Question();
         $this->questions->setDI($this->di);
         
