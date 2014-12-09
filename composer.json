@@ -1,0 +1,22 @@
+{
+"name": "weleoka/forumdb",
+"type": "library",
+"description": "Forum interface model for MySQL",
+"keywords": ["forum", "education", "wrapper"],
+"homepage": "https://github.com/weleoka/forumdb",
+"license": "MIT",
+"authors": [
+{
+"name": "Kai Weeks",
+"email": "kai.weeks@eeee.se",
+"role": "Developer"
+}
+],
+"require": {
+        "mos/cform": "2.*@dev",
+        "mos/cdatabase": "dev-master",
+},
+"autoload": {
+"psr-4": { "Weleoka\\": "src/" }
+}
+} 
