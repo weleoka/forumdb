@@ -20,7 +20,7 @@ public function save($values = [])
 {
     $this->setProperties($values);
     $values = $this->getProperties();
- 
+
     if (isset($values['id'])) {
         return $this->update($values, $this->getSource());
     } else {
@@ -41,11 +41,11 @@ public function delete($id)
         	$this->getSource(),
         	'id = ?'
     	);
- 
+
     	return $this->db->execute([$id]);
 	}
 
-	
+
 /**
  * Find and return specific.
  *
@@ -53,16 +53,16 @@ public function delete($id)
  */
 public function find($id)
 {
-	if (isset($id)){    
+	if (isset($id)){
     	$this->db->select()
              ->from($this->getSource())
              ->where("id = ?");
- 
+
     	$this->db->execute([$id]);
     	return $this->db->fetchInto($this);
  	} else {
 		echo "No question found, sorry";
- 	} 
+ 	}
 }
 
 	/**
@@ -72,16 +72,16 @@ public function find($id)
  	*/
 	public function findAll($tab = null)
 	{
-		if (isset($tab)){    
+		if (isset($tab)){
     			$this->db->select()
              		->from($this->getSource())
              		->where("tab = ?");
     			$this->db->execute([$tab]);
-    			
+
     			return $this->db->fetchInto($this);
  			} else {
 				echo "No comments found, sorry";
-			}	
+			}
    }
 
 	/**
@@ -108,10 +108,10 @@ public function find($id)
 	public function where($condition)
 	{
     	$this->db->where($condition);
- 
+
     	return $this;
 	}
-	
+
 /**
  * Build the and where part.
  *
@@ -122,10 +122,10 @@ public function find($id)
 	public function andWhere($condition)
 	{
     	$this->db->andWhere($condition);
- 
+
     	return $this;
 	}
-	
+
 /**
  * Execute the query built.
  *
@@ -137,10 +137,10 @@ public function find($id)
 	{
     	$this->db->execute($this->db->getSQL(), $params);
     	$this->db->setFetchModeClass(__CLASS__);
- 
+
     	return $this->db->fetchAll();
 	}
-	
+
 /**
  * Create new row.
  *
@@ -152,19 +152,19 @@ public function find($id)
 	{
     	$keys   = array_keys($values);
     	$values = array_values($values);
- 
+
     	$this->db->insert(
       	 $this->getSource(),
      		 $keys
     	);
- 
+
     	$res = $this->db->execute($values);
- 
+
     	$this->id = $this->db->lastInsertId();
- 
+
     	return $res;
 	}
-	
+
 	/**
  * Update row.
  *
@@ -176,17 +176,17 @@ public function find($id)
 	{
     	$keys   = array_keys($values);
     	$values = array_values($values);
- 
+
     	// It is an update so remove id and use as where-clause
     	unset($keys['id']);
     	$values[] = $this->id;
- 
+
     	$this->db->update(
         	$this->getSource(),
         	$keys,
         	"id = ?"
     	);
- 
+
     	return $this->db->execute($values);
 }
 
@@ -196,7 +196,7 @@ public function find($id)
  * @return string with the table name.
  */
 	public function getSource()
-	{   	 
+	{
    	 return strtolower(implode('', array_slice(explode('\\', get_class($this)), -1)));
 	}
 
@@ -210,7 +210,7 @@ public function find($id)
    	$properties = get_object_vars($this);
     	unset($properties['di']);
     	unset($properties['db']);
- 
+
     	return $properties;
 	}
 
@@ -228,9 +228,9 @@ public function find($id)
         	foreach ($properties as $key => $val) {
             	$this->$key = $val;
         	}
-    	}	
+    	}
 	}
- 
+
 
 }
 

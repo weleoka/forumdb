@@ -16,15 +16,20 @@ public function initialize()
 
         $this->questions = new \Weleoka\Forumdb\Question();
         $this->questions->setDI($this->di);
-        
+
         $this->answers = new \Weleoka\Forumdb\Answer();
         $this->answers->setDI($this->di);
-        
+
         $this->comments = new \Weleoka\Forumdb\Comment();
         $this->comments->setDI($this->di);
+
+        $this->tags = new \Weleoka\Forumdb\Tag();
+        $this->tags->setDI($this->di);
     }
 
- /**
+
+
+/**
  * List comment with id.
  *
  * @param int $id of user to display
@@ -32,15 +37,15 @@ public function initialize()
  * @return void
  */
 	public function idAction($id = null)
-	{ 	
+	{
 			$one = $this->questions->find($id);
-			
+
 			$this->theme->setTitle("Se specifik Fråga");
-			
+
          $this->views->add('kmom03/page1', [
 	    		'content' => $this->sidebarGen(),
-       		],'sidebar');	
-       		
+       		],'sidebar');
+
 			$this->views->add('comments/commentsq', [
 				'comment' => $one,
 				'title' => 'Visar frågan: ',
@@ -64,7 +69,7 @@ public function initialize()
 						$now = date_create()->format('Y-m-d H:i:s'); // returns local time
 
              		$user = $this->questions->getUser();
-						
+
 						$this->answers->save([
 								'userID'		=> $user->id,
 								'question'	=> null,
@@ -87,80 +92,79 @@ public function initialize()
          // What to do if the form was submitted?
 				$this->comments->AddFeedback('Ditt svar har sparats.');
          	$url = $this->url->create('' . $tab . '');
-			   $this->response->redirect($url);	         	
-				
+			   $this->response->redirect($url);
+
 			} else if ($status === false) {
       	// What to do when form could not be processed?
 				$this->comments->AddFeedback('Ditt svar kunde inte sparas.');
 				$url = $this->url->create('forumdb/add/' . $tab . '');
-			   $this->response->redirect($url);	 
+			   $this->response->redirect($url);
 			}
-          
+
 			//Here starts the rendering phase of the add action
 			$this->theme->setTitle("Lägg till kommentar");
- 
+
 	      $this->views->add('kmom03/page1', [
 	    		'content' => $this->sidebarGen($tab),
        		],'sidebar');
-       	
-			$formOptions = [
-            // 'start'           => false,  // Only return the start of the form element
-            // 'columns' 	      => 1,      // Layout all elements in two columns
-            // 'use_buttonbar'   => true,   // Layout consequtive buttons as one element wrapped in <p>
-            // 'use_fieldset'    => true,   // Wrap form fields within <fieldset>
-            // 'legend'          => isset($this->form['legend']) ? $this->form['legend'] : null,   // Use legend for fieldset
-            // 'wrap_at_element' => false,  // Wraps column in equal size or at the set number of elements
-        	];       	
 
 			$this->views->add('comments/add', [
-				'content' =>$form->getHTML($formOptions),
+				'content' =>$form->getHTML(),
 				'title' => 'Skapa en ny kommentar',
 			]);
-    		} else { 
+    		} else {
     			$url = $this->url->create('');
-    					
+
 				$this->views->add('me/page', [
         			'content' => '<i class="fa fa-square-o"></i><a href="' . $url . '/users/login/' . $id . '"> Logga in</a> för att skriva inlägg',
     			]);
     		}
 	}
 
-	
+
     /**
      * View all comments.
      *
      * @return void
      */
-	public function viewAction($tab = null, $redirect = null)
+	public function viewAction($tag = null, $redirect = null)
 	{
     	  $all = $this->questions->query()
-            ->where('tab = "' . $tab . '"')
+            ->where('tag = "' . $tag . '"')
             ->execute();
     	  $array = object_to_array($all);
 		  $this->theme->setTitle("Alla Frågor");
         $this->views->add('comments/comments', [
             'comments' => $array,
-            'tab'      => $tab, 
+            'tag'      => $tag,
             'redirect' => $redirect,
-            'title'	  => 'Alla frågor',
+            'title'	  => 'Alla frågor under taggen ' . $tag . '.',
         ]);
 
         $this->views->add('kmom03/page1', [
-	    		'content' => $this->sidebarGen($tab),
+	    		'content' => $this->sidebarGen($tag),
         ],'sidebar');
 	}
 
-	
-	
+
+
     /**
-     * Add a comment.
+     * Add a question.
      *
      * @return void
      */
-	public function addAction($tab = null, $question = null)
+	public function addAction($tag = null, $question = null)
 	{
+		$tags = $this->tags->getTags();
        $form = $this->form;
 				$form = $form->create([], [
+					'title' => [
+						'type'        => 'text',
+						'label'       => 'Fråga',
+						'required'    => true,
+						'placeholder' => 'Frågans titel.',
+						'validation'  => ['not_empty'],
+					],
 					'content' => [
 						'type'        => 'textarea',
 						'label'       => 'Kommentar',
@@ -168,21 +172,27 @@ public function initialize()
 						'placeholder' => 'Kommentar',
 						'validation'  => ['not_empty'],
 					],
+				  'tag' => [
+    					'type' => 'select',
+    					'label' => 'Forum tags:',
+    					'options' => $tags,
+  					],
 					'submit' => [
 						'type'      => 'submit',
 						'class'		=> 'bigButton',
-						'callback'  => function($form) use ($tab){
+						'callback'  => function($form) use ($tag){
 						$now = date_create()->format('Y-m-d H:i:s'); // returns local time
 						$user = $this->forum->getUser();
 					//	$now = gmdate('Y-m-d H:i:s'); // returns UTC
-             
-						$this->comments->save([
+
+						$this->questions->save([
+								'title'		=> $form->Value('title'),
 								'userID'		=> $_SESSION['user']['id'],
                         'name'		=> $_SESSION['user']['name'],
                         'content'	=> $form->Value('content'),
                         'email'		=> $_SESSION['user']['email'],
                         'timestamp' => $now,
-                        'tab' 		=> $tab,
+                        'tag'			=> $form->Value('tag'),
 						]);
 						return true;
 					}
@@ -196,37 +206,24 @@ public function initialize()
          // What to do if the form was submitted?
 				$this->forum->AddFeedback('Kommentaren har sparats.');
          	$url = $this->url->create('' . $tab . '');
-			   $this->response->redirect($url);	         	
-				
+			   $this->response->redirect($url);
+
 			} else if ($status === false) {
       	// What to do when form could not be processed?
 				$this->forum->AddFeedback('Kommentaren kunde inte sparas.');
 				$url = $this->url->create('forumdb/add/' . $tab . '');
-			   $this->response->redirect($url);	 
+			   $this->response->redirect($url);
 			}
-          
+
 			//Here starts the rendering phase of the add action
 			$this->theme->setTitle("Lägg till kommentar");
- 
+
 	      $this->views->add('kmom03/page1', [
-	    		'content' => $this->sidebarGen($tab),
+	    		'content' => $this->sidebarGen($tag),
        		],'sidebar');
-       	
-			$formOptions = [
-            // 'start'           => false,  // Only return the start of the form element
-            // 'columns' 	      => 1,      // Layout all elements in two columns
-            // 'use_buttonbar'   => true,   // Layout consequtive buttons as one element wrapped in <p>
-            // 'use_fieldset'    => true,   // Wrap form fields within <fieldset>
-            // 'legend'          => isset($this->form['legend']) ? $this->form['legend'] : null,   // Use legend for fieldset
-            // 'wrap_at_element' => false,  // Wraps column in equal size or at the set number of elements
-        	];       	
-       	if (isset($question)) {
-			$this->views->add('me/page', [
-				'content' =>$question,
-			]);       	
-       	}
+
 			$this->views->add('comments/add', [
-				'content' =>$form->getHTML($formOptions),
+				'content' =>$form->getHTML(),
 				'title' => 'Skapa en ny kommentar',
 			]);
 	}
@@ -262,10 +259,10 @@ public function initialize()
 						'callback'  => function($form) use ($comment) {
 
 						$now = gmdate('Y-m-d H:i:s');
-             
+
 						$this->comments->save([
 								'content'	=> $form->Value('content'),
-                        'timestamp' => $now,                      
+                        'timestamp' => $now,
 						]);
 
 						return true;
@@ -281,37 +278,27 @@ public function initialize()
          // What to do if the form was submitted?
 				$this->forum->AddFeedback("Kommentarens ändringar sparades.");
          	$url = $this->url->create('forumdb/view/' . $tab . '');
-			   $this->response->redirect($url);	         	
-				
+			   $this->response->redirect($url);
+
 			} else if ($status === false) {
       	// What to do when form could not be processed?
 				$this->forum->AddFeedback("Kommentaren kunde inte sparas till databasen.");
 				$url = $this->url->create('forumdb/edit/' . $tab . '');
-			   $this->response->redirect($url);	 
+			   $this->response->redirect($url);
 			}
-          
 			//Here starts the rendering phase of the add action
 			$this->theme->setTitle("Lägg till kommentar");
- 
+
 	      $this->views->add('kmom03/page1', [
 	    		'content' => $this->sidebarGen($tab),
        		],'sidebar');
-       	
-			$formOptions = [
-            // 'start'           => false,  // Only return the start of the form element
-            // 'columns' 	      => 1,      // Layout all elements in two columns
-            // 'use_buttonbar'   => true,   // Layout consequtive buttons as one element wrapped in <p>
-            // 'use_fieldset'    => true,   // Wrap form fields within <fieldset>
-            // 'legend'          => isset($this->form['legend']) ? $this->form['legend'] : null,   // Use legend for fieldset
-            // 'wrap_at_element' => false,  // Wraps column in equal size or at the set number of elements
-        	];       	
-       	
+
 			$this->views->add('comments/edit', [
-				'content' =>$form->getHTML($formOptions),
+				'content' =>$form->getHTML(),
 				'title' => 'Redigera kommentar',
 			]);
 	}
- 
+
 
 
     /**
@@ -331,33 +318,118 @@ public function initialize()
     	$res = $this->forum->delete($id);
 
  	 	$feedback = "Posten är nu permanent borttagen.";
-	   
+
 	  	$url = $this->url->create('forumdb/view/' . $tab . '');
-	   $this->response->redirect($url);	
-	 	// $this->viewAction($feedback, $tab);         
+	   $this->response->redirect($url);
+	 	// $this->viewAction($feedback, $tab);
 	}
 
 
-    
+
 /**
  * Generate sidebar content.
  *
- * @param 
+ * @param
  *
  * @return sidebar
  */
-	public function sidebarGen($tab = null) 
-	{  
+	public function sidebarGen($tag = null)
+	{
 	  $user = new \Weleoka\Users\User();
 	  $url = $this->url->create('');
-     $sidebar = '<p><i class="fa fa-plus">    </i> <a href="' . $url . '/forumdb/add/' . $tab . '"> Ny kommentar</a></p>                 
-                 <p><i class="fa fa-list-ol"></i><a href="' . $url . '/forumdb/view/' . $tab . '"> Alla</a></p>';
+     $sidebar = '<p><i class="fa fa-plus">    </i> <a href="' . $url . '/forumdb/add/' . $tag . '"> Ny kommentar</a></p>
+                 <p><i class="fa fa-list-ol"></i><a href="' . $url . '/forumdb/view/' . $tag . '"> Alla</a></p>';
      if ($user->isAdmin()) {
+     		$sidebar .= '--- admin ---';
+     		$sidebar .= '<p><i class="fa fa-refresh"></i><a href="' . $url . '/forumdb/addtag"> Lägg till tag</a></p>';
      		$sidebar .= '<p><i class="fa fa-refresh"></i><a href="' . $url . '/setupComments"> Nolställ DB</a></p>';
-	  }	  
-	  return $sidebar;	           
-//                 <p><i class="fa fa-check-square-o"></i><a href="' . $url . '/users/active"> ingen info</a></p>
-//                 <p><i class="fa fa-square-o"></i><a href="' . $url . '/users/inactive"> ingen info</a></p>
-//                 <p><i class="fa fa-trash-o"></i><a href="' . $url . '/users/deleted"> ingen info</a></p>
+	  }
+	  return $sidebar;
 	}
+
+
+
+/*
+ * Insert tag into table.
+ *
+ * @return array
+ */
+	public function addtagAction() {
+		$form = $this->form;
+				$form = $form->create([], [
+					'tag' => [
+						'type'        => 'text',
+						'label'       => 'Ny tag: ',
+						'required'    => true,
+						'placeholder' => 'Ny tag',
+						'validation'  => ['not_empty'],
+					],
+					'submit' => [
+						'type'      => 'submit',
+						'callback'  => function($form) {
+
+						$this->tags->save([
+                        'tag'   => $form->Value('tag'),
+						]);
+
+						return true;
+					}
+				],
+			]);
+
+			// Check the status of the form
+			$status = $form->check();
+
+			if ($status === true) {
+         // What to do if the form was submitted?
+				$this->forum->AddFeedback('Den nya taggen är nu sparad.');
+         	$url = $this->url->create('forumdb/addtag');
+			   $this->response->redirect($url);
+
+			} else if ($status === false) {
+      	// What to do when form could not be processed?
+				$this->forum->AddFeedback('Den nya taggen kunde inte skapas.');
+				$url = $this->url->create('forumdb/addtag');
+			   $this->response->redirect($url);
+			}
+
+			//Here starts the rendering phase of the add action
+			$this->theme->setTitle("Lägg till tag");
+
+			$tagsHTML = $this->tags->listTags();
+
+ 			$this->views->add('kmom03/page1', [
+	    		'content' => $tagsHTML,
+       		],'featured-1');
+
+	      $this->views->add('kmom03/page1', [
+	    		'content' => $this->sidebarGen(),
+       		],'sidebar');
+
+			$this->views->add('comments/add', [
+				'content' =>$form->getHTML(),
+				'title' => '<h2>Skapa en ny tag.</h2>',
+			]);
+	}
+
+
+
+	 /**
+     * View all the different tags.
+     *
+     * @return void
+     */
+	public function viewtagsAction()
+	{
+		  $tagsHTML = $this->tags->listTags();
+
+		  $this->views->add('kmom03/page1', [
+	    		'content' => $tagsHTML,
+       		],'main');
+
+        $this->views->add('kmom03/page1', [
+	    		'content' => $this->sidebarGen(),
+        ],'sidebar');
+	}
+
 }

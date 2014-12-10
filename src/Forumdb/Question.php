@@ -14,7 +14,7 @@ class Question extends \Weleoka\Forumdb\ForumdbModel
      *
      * @return void
      */
-	public function deleteAction($id)
+	public function dddeleteAction($id)
 	{
 		if (!isset($id)) {
         die("Missing id");

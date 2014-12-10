@@ -22,6 +22,8 @@ class Forum extends \Weleoka\Forumdb\ForumdbModel
 		return $usr;
 	}
 	
+
+
 	 /**
      * Add output to display to the user what happened with the comment.
      *
