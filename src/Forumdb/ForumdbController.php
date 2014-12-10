@@ -30,7 +30,7 @@ public function initialize()
 
 
 /**
- * List comment with id.
+ * List question with id.
  *
  * @param int $id of user to display
  *
@@ -38,20 +38,25 @@ public function initialize()
  */
 	public function idAction($id = null)
 	{
-			$one = $this->questions->find($id);
-
-			$this->theme->setTitle("Se specifik Fråga");
-
-         $this->views->add('kmom03/page1', [
-	    		'content' => $this->sidebarGen(),
-       		],'sidebar');
-
+			$question = $this->questions->find($id);
+			$this->theme->setTitle("Fråga: " . $question->title);
+			$tag = $question->tag;
+			
 			$this->views->add('comments/commentsq', [
-				'comment' => $one,
+				'comment' => $question,
 				'title' => 'Visar frågan: ',
 			]);
+		  
+		   $all = $this->answers->query()
+            ->where('parentID = "' . $question->id . '"')
+            ->execute();
+    	   $answers = object_to_array($all);
 
-			$tab = $one->tab;
+         $this->views->add('comments/answers', [
+            'answers' => $answers,
+            'title'	  => 'Alla svar för frågan.',
+        ]);
+
 			if (isset($_SESSION['user'])) {
 				$form = $this->form;
 				$form = $form->create([], [
@@ -65,20 +70,18 @@ public function initialize()
 					'submit' => [
 						'type'      => 'submit',
 						'class'		=> 'bigButton',
-						'callback'  => function($form) use ($tab){
+						'callback'  => function($form) use ($question){
 						$now = date_create()->format('Y-m-d H:i:s'); // returns local time
 
-             		$user = $this->questions->getUser();
+             		$user = $this->forum->getUser();
 
 						$this->answers->save([
 								'userID'		=> $user->id,
-								'question'	=> null,
-								'parentID'  => $one->id,
+								'parentID'  => $question->id,
                         'name'		=> $user->name,
                         'content'	=> $form->Value('content'),
                         'email'		=> $user->email,
                         'timestamp' => $now,
-                        'tab' 		=> $tab,
 						]);
 						return true;
 					}
@@ -90,7 +93,7 @@ public function initialize()
 
 			if ($status === true) {
          // What to do if the form was submitted?
-				$this->comments->AddFeedback('Ditt svar har sparats.');
+				$this->forum->AddFeedback('Ditt svar har sparats.');
          	$url = $this->url->create('' . $tab . '');
 			   $this->response->redirect($url);
 
@@ -102,15 +105,14 @@ public function initialize()
 			}
 
 			//Here starts the rendering phase of the add action
-			$this->theme->setTitle("Lägg till kommentar");
-
+			
 	      $this->views->add('kmom03/page1', [
-	    		'content' => $this->sidebarGen($tab),
+	    		'content' => $this->sidebarGen($tag),
        		],'sidebar');
 
 			$this->views->add('comments/add', [
 				'content' =>$form->getHTML(),
-				'title' => 'Skapa en ny kommentar',
+				'title' => 'Skriv ett svar',
 			]);
     		} else {
     			$url = $this->url->create('');
@@ -123,7 +125,7 @@ public function initialize()
 
 
     /**
-     * View all comments.
+     * View all comments questions under certain tag.
      *
      * @return void
      */
@@ -134,7 +136,7 @@ public function initialize()
             ->execute();
     	  $array = object_to_array($all);
 		  $this->theme->setTitle("Alla Frågor");
-        $this->views->add('comments/comments', [
+        $this->views->add('comments/commentsqs', [
             'comments' => $array,
             'tag'      => $tag,
             'redirect' => $redirect,
@@ -348,6 +350,11 @@ public function initialize()
 	}
 
 
+
+
+
+
+/* ---------------------------- TAG HANDLING -----------------------------------*/
 
 /*
  * Insert tag into table.
