@@ -19,7 +19,7 @@ class Tag extends \Weleoka\Forumdb\ForumdbModel
             ->execute();
 
 		foreach ($tags as $tag) {
-			$aaa[$tag->id] = $tag->tag;
+			$aaa[$tag->tag] = $tag->tag;
 		} 
 		return $aaa;
 	}
@@ -31,9 +31,8 @@ class Tag extends \Weleoka\Forumdb\ForumdbModel
  *
  * @return tagsArray
  */
-	public function listTags() {
-		
-		// $show = $this->url->create('forumsdb/view/' . $tag->id);		
+	public function listTags() 
+	{
 		$html = '';
 		$tags = $this->query()
             ->execute();

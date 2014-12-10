@@ -40,6 +40,14 @@ class Forum extends \Weleoka\Forumdb\ForumdbModel
         }
         return $this;
     }
+    
+    
+
+
+}
+
+
+
 /*
 public function findByName($acronym)
     {
@@ -58,4 +66,3 @@ echo "user created";
      	return $this->db->fetchInto($this);
 	}
 */ 
-}

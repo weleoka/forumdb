@@ -29,4 +29,26 @@ class Question extends \Weleoka\Forumdb\ForumdbModel
 	   $this->response->redirect($url);	
 	 	// $this->viewAction($feedback, $tab);         
 	}
+	
+	
+	
+	 /**
+     * View all posts; questions by certain user.
+     *
+     * @return void
+     */
+	public function viewAllposts($id)
+	{    
+    	  $all = $this->query()
+           		->where('userID = "' . $id . '"')
+           		->execute();
+
+    	  $array = object_to_array($all);
+    	  
+    	  return $array;
+   }
 }
+
+
+
+

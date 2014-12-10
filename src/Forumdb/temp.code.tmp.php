@@ -1,3 +1,4 @@
+<?php 
  /*   $aaa = new \stdClass();
 foreach ($one as $item => $value)
 {
@@ -33,3 +34,35 @@ foreach ($one as $item => $value)
         	//                 <p><i class="fa fa-check-square-o"></i><a href="' . $url . '/users/active"> ingen info</a></p>
 //                 <p><i class="fa fa-square-o"></i><a href="' . $url . '/users/inactive"> ingen info</a></p>
 //                 <p><i class="fa fa-trash-o"></i><a href="' . $url . '/users/deleted"> ingen info</a></p>
+
+
+
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+
+
+
+  $this->views->add('comments/commentsqs', [
+            'questions' => $array,
+            'tag'      	=> $tag,
+            'title'	  	=> 'Alla användarens frågor.',
+        ]);
+
+  
+        $this->views->add('comments/commentsqs', [
+            'questions' => $array,
+            'tag'      	=> $tag,
+            'title'	  	=> 'Alla användarens svar på frågor.',
+        ]);
+        
+        
+        
+        
+        
+        FROM USERSCONTROLLER IDACTION
+        
+        			$questions = new \Weleoka\Forumdb\Question();
+			$userQuestions = $questions->viewAllposts($id);
+			$this->views->add('forumdb/comments', [
+				'comments' => $userQuestions,
+				'title' => 'Visar användarens frågor och svar: ',
+			], 'main');

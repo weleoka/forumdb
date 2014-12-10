@@ -1,13 +1,13 @@
 <?php
-namespace Weleoka\Forumdb;
+namespace Weleoka\Users;
 
 /**
- * To attach comments-flow to a page or some content.
+ * Model for Users.
  *
  */
-class ForumdbModel implements \Anax\DI\IInjectionAware
+class UsersdbModel implements \Anax\DI\IInjectionAware
 {
-    use \Anax\DI\TInjectable;
+     use \Anax\DI\TInjectable;
 
 /**
  * Save current object/row.
@@ -22,9 +22,9 @@ public function save($values = [])
     $values = $this->getProperties();
 
     if (isset($values['id'])) {
-        return $this->update($values, $this->getSource());
+        return $this->update($values);
     } else {
-        return $this->create($values, $this->getSource());
+        return $this->create($values);
     }
 }
 
@@ -41,10 +41,8 @@ public function delete($id)
         	$this->getSource(),
         	'id = ?'
     	);
-
     	return $this->db->execute([$id]);
 	}
-
 
 /**
  * Find and return specific.
@@ -61,27 +59,30 @@ public function find($id)
     	$this->db->execute([$id]);
     	return $this->db->fetchInto($this);
  	} else {
-		echo "No question found, sorry";
+		echo "No user found, sorry";
+// 		$id = $this->db->lastInsertId();
+//		$this->db->select()
+//             ->from($this->getSource())
+//             ->where("id = ?");
+//      echo $id;
+//		$this->db->execute([$id]);
+//    	return $this->db->fetchInto($this);
  	}
 }
 
 	/**
- 	* Find and return all under specific tab.
+ 	* Find and return all.
  	*
  	* @return array
  	*/
-	public function findAll($tab = null)
+	public function findAll()
 	{
-		if (isset($tab)){
-    			$this->db->select()
-             		->from($this->getSource())
-             		->where("tab = ?");
-    			$this->db->execute([$tab]);
+    	$this->db->select()
+             ->from($this->getSource());
 
-    			return $this->db->fetchInto($this);
- 			} else {
-				echo "No comments found, sorry";
-			}
+    	$this->db->execute();
+    	$this->db->setFetchModeClass(__CLASS__);
+    	return $this->db->fetchAll();
    }
 
 	/**
@@ -95,6 +96,7 @@ public function find($id)
 	{
     	$this->db->select($columns)
              	->from($this->getSource());
+
     	return $this;
 	}
 
@@ -165,7 +167,7 @@ public function find($id)
     	return $res;
 	}
 
-	/**
+/**
  * Update row.
  *
  * @param array $values key/values to save.
@@ -177,7 +179,7 @@ public function find($id)
     	$keys   = array_keys($values);
     	$values = array_values($values);
 
-    	// It is an update so remove id and use as where-clause
+    	// Its update, remove id and use as where-clause
     	unset($keys['id']);
     	$values[] = $this->id;
 
@@ -186,6 +188,7 @@ public function find($id)
         	$keys,
         	"id = ?"
     	);
+
     	return $this->db->execute($values);
 }
 
@@ -213,7 +216,7 @@ public function find($id)
     	return $properties;
 	}
 
-	/**
+/**
  * Set object properties.
  *
  * @param array $properties with properties to set.
@@ -229,7 +232,4 @@ public function find($id)
         	}
     	}
 	}
-
-
 }
-

@@ -99,7 +99,7 @@ public function initialize()
 
 			} else if ($status === false) {
       	// What to do when form could not be processed?
-				$this->comments->AddFeedback('Ditt svar kunde inte sparas.');
+				$this->forum->AddFeedback('Ditt svar kunde inte sparas.');
 				$url = $this->url->create('forumdb/add/' . $tab . '');
 			   $this->response->redirect($url);
 			}
@@ -129,18 +129,24 @@ public function initialize()
      *
      * @return void
      */
-	public function viewAction($tag = null, $redirect = null)
+	public function viewAction($tag = null)
 	{
-    	  $all = $this->questions->query()
-            ->where('tag = "' . $tag . '"')
-            ->execute();
+		  if (isset($tag)) {    	  
+    	  		$all = $this->questions->query()
+            		->where('tag = "' . $tag . '"')
+            		->execute();
+            $category = $tag;
+        } else {
+				$all = $this->questions->query()
+						->execute();
+				$category = "Allt";
+        }
     	  $array = object_to_array($all);
 		  $this->theme->setTitle("Alla Frågor");
         $this->views->add('comments/commentsqs', [
-            'comments' => $array,
-            'tag'      => $tag,
-            'redirect' => $redirect,
-            'title'	  => 'Alla frågor under taggen ' . $tag . '.',
+            'questions' => $array,
+            'tag'      	=> $tag,
+            'title'	  	=> 'Kategori: ' . $category . '.',
         ]);
 
         $this->views->add('kmom03/page1', [
@@ -155,7 +161,7 @@ public function initialize()
      *
      * @return void
      */
-	public function addAction($tag = null, $question = null)
+	public function addAction($tag = null)
 	{
 		$tags = $this->tags->getTags();
        $form = $this->form;
@@ -185,14 +191,13 @@ public function initialize()
 						'callback'  => function($form) use ($tag){
 						$now = date_create()->format('Y-m-d H:i:s'); // returns local time
 						$user = $this->forum->getUser();
-					//	$now = gmdate('Y-m-d H:i:s'); // returns UTC
 
 						$this->questions->save([
 								'title'		=> $form->Value('title'),
-								'userID'		=> $_SESSION['user']['id'],
-                        'name'		=> $_SESSION['user']['name'],
+								'userID'		=> $user->id,
+                        'name'		=> $user->name,
                         'content'	=> $form->Value('content'),
-                        'email'		=> $_SESSION['user']['email'],
+                        'email'		=> $user->email,
                         'timestamp' => $now,
                         'tag'			=> $form->Value('tag'),
 						]);
@@ -207,13 +212,13 @@ public function initialize()
 			if ($status === true) {
          // What to do if the form was submitted?
 				$this->forum->AddFeedback('Kommentaren har sparats.');
-         	$url = $this->url->create('' . $tab . '');
+         	$url = $this->url->create('' . $tag . '');
 			   $this->response->redirect($url);
 
 			} else if ($status === false) {
       	// What to do when form could not be processed?
 				$this->forum->AddFeedback('Kommentaren kunde inte sparas.');
-				$url = $this->url->create('forumdb/add/' . $tab . '');
+				$url = $this->url->create('forumdb/add/' . $tag . '');
 			   $this->response->redirect($url);
 			}
 
@@ -232,7 +237,7 @@ public function initialize()
 
 
     /**
-     * Edit a comment.
+     * Edit a question.
      *
      * @param id of comment to edit.
      *
@@ -242,7 +247,7 @@ public function initialize()
 	{
       $form = $this->form;
 
-			$comment = $this->comments->find($id);
+			$comment = $this->questions->find($id);
 			$tab = $comment->tab;
 
 				$form = $form->create([], [
@@ -278,13 +283,13 @@ public function initialize()
 
 			if ($status === true) {
          // What to do if the form was submitted?
-				$this->forum->AddFeedback("Kommentarens ändringar sparades.");
+				$this->forum->AddFeedback("Ändringar sparades.");
          	$url = $this->url->create('forumdb/view/' . $tab . '');
 			   $this->response->redirect($url);
 
 			} else if ($status === false) {
       	// What to do when form could not be processed?
-				$this->forum->AddFeedback("Kommentaren kunde inte sparas till databasen.");
+				$this->forum->AddFeedback("Ändringarna kunde inte sparas till databasen.");
 				$url = $this->url->create('forumdb/edit/' . $tab . '');
 			   $this->response->redirect($url);
 			}
@@ -319,7 +324,7 @@ public function initialize()
 
     	$res = $this->forum->delete($id);
 
- 	 	$feedback = "Posten är nu permanent borttagen.";
+ 	 	$this->forum->AddFeedback("Posten är nu permanent borttagen.");
 
 	  	$url = $this->url->create('forumdb/view/' . $tab . '');
 	   $this->response->redirect($url);
@@ -439,4 +444,5 @@ public function initialize()
         ],'sidebar');
 	}
 
+  
 }

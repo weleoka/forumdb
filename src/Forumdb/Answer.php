@@ -21,4 +21,20 @@ echo "user created";
 */
 
 
+	  /**
+     * View all posts; answers by certain user.
+     *
+     * @return void
+     */
+	public function viewAllposts($id)
+	{    
+  	  	  $all = $this->query()
+           		->where('userID = "' . $id . '"')
+           		->execute();
+
+    	  $array = object_to_array($all);
+    	  return $array;
+   }
+
+
 }
