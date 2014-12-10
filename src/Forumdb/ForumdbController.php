@@ -43,7 +43,7 @@ public function initialize()
        		
 			$this->views->add('comments/commentsq', [
 				'comment' => $one,
-				//'title' => 'Visar information för: ',
+				'title' => 'Visar frågan: ',
 			]);
 
 			$tab = $one->tab;
@@ -63,7 +63,6 @@ public function initialize()
 						'callback'  => function($form) use ($tab){
 						$now = date_create()->format('Y-m-d H:i:s'); // returns local time
 
-					//	$now = gmdate('Y-m-d H:i:s'); // returns UTC
              		$user = $this->questions->getUser();
 						
 						$this->answers->save([
@@ -126,12 +125,7 @@ public function initialize()
     		}
 	}
 
- /*   $aaa = new \stdClass();
-foreach ($one as $item => $value)
-{
-    $aaa->$item = $value;
-}
-	*/	
+	
     /**
      * View all comments.
      *
@@ -153,7 +147,7 @@ foreach ($one as $item => $value)
 
         $this->views->add('kmom03/page1', [
 	    		'content' => $this->sidebarGen($tab),
-       ],'sidebar');
+        ],'sidebar');
 	}
 
 	
@@ -179,7 +173,7 @@ foreach ($one as $item => $value)
 						'class'		=> 'bigButton',
 						'callback'  => function($form) use ($tab){
 						$now = date_create()->format('Y-m-d H:i:s'); // returns local time
-						$user = $this->comments->getUser();
+						$user = $this->forum->getUser();
 					//	$now = gmdate('Y-m-d H:i:s'); // returns UTC
              
 						$this->comments->save([
@@ -200,13 +194,13 @@ foreach ($one as $item => $value)
 
 			if ($status === true) {
          // What to do if the form was submitted?
-				$this->comments->AddFeedback('Kommentaren har sparats.');
+				$this->forum->AddFeedback('Kommentaren har sparats.');
          	$url = $this->url->create('' . $tab . '');
 			   $this->response->redirect($url);	         	
 				
 			} else if ($status === false) {
       	// What to do when form could not be processed?
-				$this->comments->AddFeedback('Kommentaren kunde inte sparas.');
+				$this->forum->AddFeedback('Kommentaren kunde inte sparas.');
 				$url = $this->url->create('forumdb/add/' . $tab . '');
 			   $this->response->redirect($url);	 
 			}
@@ -285,13 +279,13 @@ foreach ($one as $item => $value)
 
 			if ($status === true) {
          // What to do if the form was submitted?
-				$form->AddOutput("Kommentarens ändringar sparades.");
+				$this->forum->AddFeedback("Kommentarens ändringar sparades.");
          	$url = $this->url->create('forumdb/view/' . $tab . '');
 			   $this->response->redirect($url);	         	
 				
 			} else if ($status === false) {
       	// What to do when form could not be processed?
-				$form->AddOutput("Kommentaren kunde inte sparas till databasen.");
+				$this->forum->AddFeedback("Kommentaren kunde inte sparas till databasen.");
 				$url = $this->url->create('forumdb/edit/' . $tab . '');
 			   $this->response->redirect($url);	 
 			}
@@ -321,7 +315,7 @@ foreach ($one as $item => $value)
 
 
     /**
-     * Remove one specific comment (based on $id).
+     * Remove one specific entry (based on $id).
      *
      * @return void
      */
@@ -331,12 +325,12 @@ foreach ($one as $item => $value)
         die("Missing id");
     	}
  	 	// $comment = $this->comments->find($id);
- 	   $one = $this->comments->find($id);
+ 	   $one = $this->forum->find($id);
  	   $tab = $one->tab;
 
-    	$res = $this->comments->delete($id);
+    	$res = $this->forum->delete($id);
 
- 	 	$feedback = "Kommentaren är nu permanent borttagen.";
+ 	 	$feedback = "Posten är nu permanent borttagen.";
 	   
 	  	$url = $this->url->create('forumdb/view/' . $tab . '');
 	   $this->response->redirect($url);	
@@ -353,7 +347,7 @@ foreach ($one as $item => $value)
  * @return sidebar
  */
 	public function sidebarGen($tab = null) 
-	{
+	{  
 	  $user = new \Weleoka\Users\User();
 	  $url = $this->url->create('');
      $sidebar = '<p><i class="fa fa-plus">    </i> <a href="' . $url . '/forumdb/add/' . $tab . '"> Ny kommentar</a></p>                 
