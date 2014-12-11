@@ -14,8 +14,8 @@
 ],
 "require": {
         "mos/cform": "2.*@dev",
-        "mos/cdatabase": "dev-master"
-        "Weleoka/user": "dev-master"
+        "mos/cdatabase": "dev-master",
+        "weleoka/user": "dev-master"
 },
 "autoload": {
 "psr-4": { "Weleoka\\": "src/" }

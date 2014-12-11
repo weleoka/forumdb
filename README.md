@@ -1,7 +1,7 @@
 weleoka/forumdb
 =========
 
-PHP class for comments functionality with MySQL database.
+PHP module for handling a Forum with MySQL database.
 
 
 
@@ -12,6 +12,7 @@ PHPUnit tests can be found by running the /test/config.php with PHPUnit.
 
 
 Requires mos/CDataBase.
+and Weleoka/User.
 
 Please give feedback on any improvements that you would like to see. 
 And report bugs to me@eee.se!
