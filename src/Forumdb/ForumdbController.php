@@ -20,8 +20,11 @@ public function initialize()
         $this->answers = new \Weleoka\Forumdb\Answer();
         $this->answers->setDI($this->di);
 
-        $this->comments = new \Weleoka\Forumdb\Comment();
-        $this->comments->setDI($this->di);
+        $this->commentQs = new \Weleoka\Forumdb\CommentQ();
+        $this->commentQs->setDI($this->di);
+
+        $this->commentAs = new \Weleoka\Forumdb\CommentA();
+        $this->commentAs->setDI($this->di);
 
         $this->tags = new \Weleoka\Forumdb\Tag();
         $this->tags->setDI($this->di);
@@ -38,33 +41,44 @@ public function initialize()
  */
 	public function idAction($id = null)
 	{
+			$pageTimeGeneration = microtime(true);
+
+	// Find the question by question ID.
 			$question = $this->questions->find($id);
 			$this->theme->setTitle("Fråga: " . $question->title);
-			$tag = $question->tag;
-			
-			$this->views->add('comments/commentsq', [
-				'comment' => $question,
+
+	// Comments to Question found above.
+		   $res = $this->commentQs->query()
+            ->where('parentID = ?')
+            ->execute([$question->id]);
+			$comments = object_to_array($res);
+
+	// Generate view for the question and its comments.
+			$this->views->add('comments/question', [
+				'question' => $question,
+				'comments' => $comments,
 				'title' => 'Visar frågan: ',
 			]);
-		  
-		   $all = $this->answers->query()
-            ->where('parentID = "' . $question->id . '"')
-            ->execute();
-    	   $answers = object_to_array($all);
 
+	// Answers to Question found above.
+		   $all = $this->answers->query()
+            ->where('parentID = ?')
+            ->execute([$question->id]);
+			$answers = object_to_array($all);
+	// Generate view for the the Answers to the Question above.			
          $this->views->add('comments/answers', [
             'answers' => $answers,
-            'title'	  => 'Alla svar för frågan.',
-        ]);
+            'title'	  => '',
+         ]);			
 
+	// Check if there is a user logged on and then generate Submit new Answer form.
 			if (isset($_SESSION['user'])) {
 				$form = $this->form;
 				$form = $form->create([], [
 					'content' => [
 						'type'        => 'textarea',
-						'label'       => 'Kommentar',
-						'required'    => true,
-						'placeholder' => 'Kommentar',
+						'label'       => '',
+						'placeholder' => 'Skriv ett svar',
 						'validation'  => ['not_empty'],
 					],
 					'submit' => [
@@ -83,37 +97,44 @@ public function initialize()
                         'email'		=> $user->email,
                         'timestamp' => $now,
 						]);
+
+	// For each answer added increase the answerCount of question.
+						$parameters = object_to_array($question);
+
+						$parameters['answerCount'] = $question->answerCount + 1;
+									dump ($parameters);
+						$this->questions->update($parameters);
+
 						return true;
-					}
-				],
-			]);
+						}
+					],
+				]);
 
-			// Check the status of the form
-			$status = $form->check();
+	// Check the status of the form ($question->tag is from the beginning of this function).
+				$status = $form->check();
 
-			if ($status === true) {
-         // What to do if the form was submitted?
-				$this->forum->AddFeedback('Ditt svar har sparats.');
-         	$url = $this->url->create('' . $tab . '');
-			   $this->response->redirect($url);
+				if ($status === true) {
+					$this->forum->AddFeedback('Ditt svar har sparats.');
+         		$url = $this->url->create('forumdb/id/' . $question->id . '');
+			   	$this->response->redirect($url);
 
-			} else if ($status === false) {
-      	// What to do when form could not be processed?
-				$this->forum->AddFeedback('Ditt svar kunde inte sparas.');
-				$url = $this->url->create('forumdb/add/' . $tab . '');
-			   $this->response->redirect($url);
-			}
+				} else if ($status === false) {
+					$this->forum->AddFeedback('Ditt svar kunde inte sparas.');
+					$url = $this->url->create('forumdb/id/' . $question->id . '');
+			   	$this->response->redirect($url);
+				}
 
-			//Here starts the rendering phase of the add action
-			
-	      $this->views->add('kmom03/page1', [
-	    		'content' => $this->sidebarGen($tag),
-       		],'sidebar');
+	//Here starts the rendering phase of actions if user login status true.
+	      	$this->views->add('kmom03/page1', [
+	    			'content' => $this->sidebarGen($question->tag),
+       			],'sidebar');
 
-			$this->views->add('comments/add', [
-				'content' =>$form->getHTML(),
-				'title' => 'Skriv ett svar',
-			]);
+				$this->views->add('comments/add', [
+					'content' =>$form->getHTML(),
+					'title' => 'Skriv ett svar',
+				]);
+
+	// If user login status false then this is what we do.
     		} else {
     			$url = $this->url->create('');
 
@@ -121,20 +142,28 @@ public function initialize()
         			'content' => '<i class="fa fa-square-o"></i><a href="' . $url . '/users/login/' . $id . '"> Logga in</a> för att skriva inlägg',
     			]);
     		}
+
+	// This is my silly litte lazy timer for this function.
+    		if(isset($pageTimeGeneration)) {
+  				echo "<p>Page generated in " . round(microtime(true)-$pageTimeGeneration, 5) . " seconds</p>";
+  			}
 	}
 
 
+
     /**
-     * View all comments questions under certain tag.
+     * View all comments questions under specific tag.
      *
      * @return void
      */
 	public function viewAction($tag = null)
 	{
-		  if (isset($tag)) {    	  
+		  $this->theme->setTitle("Alla Frågor");
+
+		  if (isset($tag)) {
     	  		$all = $this->questions->query()
-            		->where('tag = "' . $tag . '"')
-            		->execute();
+            		->where('tag = ?')
+            		->execute([$tag]);
             $category = $tag;
         } else {
 				$all = $this->questions->query()
@@ -142,11 +171,11 @@ public function initialize()
 				$category = "Allt";
         }
     	  $array = object_to_array($all);
-		  $this->theme->setTitle("Alla Frågor");
-        $this->views->add('comments/commentsqs', [
+
+        $this->views->add('comments/questions', [
             'questions' => $array,
             'tag'      	=> $tag,
-            'title'	  	=> 'Kategori: ' . $category . '.',
+            'title'	  	=> 'Frågor i kategori: ' . $category . '.',
         ]);
 
         $this->views->add('kmom03/page1', [
@@ -155,6 +184,8 @@ public function initialize()
 	}
 
 
+
+/* ---------------------------- ADD, EDIT and DELETE -----------------------------------*/
 
     /**
      * Add a question.
@@ -211,13 +242,13 @@ public function initialize()
 
 			if ($status === true) {
          // What to do if the form was submitted?
-				$this->forum->AddFeedback('Kommentaren har sparats.');
+				$this->forum->AddFeedback('Frågan har sparats.');
          	$url = $this->url->create('' . $tag . '');
 			   $this->response->redirect($url);
 
 			} else if ($status === false) {
       	// What to do when form could not be processed?
-				$this->forum->AddFeedback('Kommentaren kunde inte sparas.');
+				$this->forum->AddFeedback('Frågan kunde inte sparas.');
 				$url = $this->url->create('forumdb/add/' . $tag . '');
 			   $this->response->redirect($url);
 			}
@@ -239,7 +270,7 @@ public function initialize()
     /**
      * Edit a question.
      *
-     * @param id of comment to edit.
+     * @param id of question to edit.
      *
      * @return void
      */
@@ -248,7 +279,7 @@ public function initialize()
       $form = $this->form;
 
 			$comment = $this->questions->find($id);
-			$tab = $comment->tab;
+			$tag = $comment->tag;
 
 				$form = $form->create([], [
 
@@ -284,20 +315,20 @@ public function initialize()
 			if ($status === true) {
          // What to do if the form was submitted?
 				$this->forum->AddFeedback("Ändringar sparades.");
-         	$url = $this->url->create('forumdb/view/' . $tab . '');
+         	$url = $this->url->create('forumdb/view/' . $tag . '');
 			   $this->response->redirect($url);
 
 			} else if ($status === false) {
       	// What to do when form could not be processed?
 				$this->forum->AddFeedback("Ändringarna kunde inte sparas till databasen.");
-				$url = $this->url->create('forumdb/edit/' . $tab . '');
+				$url = $this->url->create('forumdb/edit/' . $tag . '');
 			   $this->response->redirect($url);
 			}
 			//Here starts the rendering phase of the add action
 			$this->theme->setTitle("Lägg till kommentar");
 
 	      $this->views->add('kmom03/page1', [
-	    		'content' => $this->sidebarGen($tab),
+	    		'content' => $this->sidebarGen($tag),
        		],'sidebar');
 
 			$this->views->add('comments/edit', [
@@ -318,7 +349,6 @@ public function initialize()
 		if (!isset($id)) {
         die("Missing id");
     	}
- 	 	// $comment = $this->comments->find($id);
  	   $one = $this->forum->find($id);
  	   $tab = $one->tab;
 
@@ -328,7 +358,6 @@ public function initialize()
 
 	  	$url = $this->url->create('forumdb/view/' . $tab . '');
 	   $this->response->redirect($url);
-	 	// $this->viewAction($feedback, $tab);
 	}
 
 
@@ -356,6 +385,55 @@ public function initialize()
 
 
 
+/* ---------------------------- COMMENT HANDLING -----------------------------------*/
+
+/*
+ * Insert comment on Question.
+ *
+ * @return array
+ */
+	public function commentqAction ($id)
+	{
+		$comment = $_POST['comment'];
+		$now = getTime();
+		$user = $this->forum->getUser();
+
+		$this->commentQs->save([
+				'parentID'  => $id,
+				'userID'		=> $user->id,
+            'name'		=> $user->name,
+            'content'	=> $comment,
+            'timestamp' => $now,
+		]);
+
+		$this->forum->AddFeedback('Din kommentar sparades.');
+		$url = $this->url->create('forumdb/id/' . $id . '');
+		$this->response->redirect($url);
+	}
+
+/*
+ * Insert comment on Answer.
+ *
+ * @return array
+ */
+	public function commentaAction ($id)
+	{
+		$comment = $_POST['comment'];
+		$now = getTime();
+		$user = $this->forum->getUser();
+
+		$this->commentAs->save([
+				'parentID'  => $id,
+				'userID'		=> $user->id,
+            'name'		=> $user->name,
+            'content'	=> $comment,
+            'timestamp' => $now,
+		]);
+
+		$this->forum->AddFeedback('Din kommentar sparades.');
+		$url = $this->url->create('forumdb/id/' . $id . '');
+		$this->response->redirect($url);
+	}
 
 
 
@@ -443,6 +521,6 @@ public function initialize()
 	    		'content' => $this->sidebarGen(),
         ],'sidebar');
 	}
-
-  
 }
+
+

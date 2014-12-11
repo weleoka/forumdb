@@ -40,29 +40,19 @@ class Forum extends \Weleoka\Forumdb\ForumdbModel
         }
         return $this;
     }
-    
-    
-
-
-}
 
 
 
-/*
+
 public function findByName($acronym)
     {
 echo "user created";     
-        $this->db->select()->from($this->getSource())->where('acronym = ?');
+        $this->db->select()
+        		->from($this->getSource())
+        		->where('acronym = ?');
         $this->db->execute([$acronym]);
         return $this->db->fetchInto($this);
     }
 
-*/
-/* 
-	public function findAll()
-	{
-	  	$this->db->select()->from($this->getSource());
-     	$this->db->execute();
-     	return $this->db->fetchInto($this);
-	}
-*/ 
+
+}

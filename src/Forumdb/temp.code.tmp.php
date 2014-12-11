@@ -1,4 +1,63 @@
 <?php 
+
+EDIT DELETE BUTTONS FROM ANSWERS.PHP
+		<a href="<?=$edit?>"><button class="smallButton" >Redigera</button></a>
+			<a href="<?=$delete?>"><button class="smallButton" >Ta bort</button></a>
+            
+  <?php 
+  
+  
+  
+  
+            	if (count($answers) > 1) {
+			} else if (count($answers) == 1) {
+			} else {
+         	$this->views->add('comments/answer', [
+            	'answer' => null,
+            	'comments'=> null,
+            	'title'	  => 'Inga svar på frågan.',
+         	]);			
+			}  
+  
+  	/*		
+	// Comments to Answers found above.
+		   $res = $this->commentAs->query()
+            ->where('parentID = ?')
+            ->execute([$question->id]);
+			$comments = object_to_array($res);
+		
+
+		// dump ($comments);
+	// Comments to Answers different AnswersIDs and insert them into the Answer array.
+			$answersWithComments = $answers;
+			$i = 0; $j = 1;
+			foreach ($answers as $answer) {
+         	$stepA = $this->comments->findAcomments($answer['id']);
+         	$stepB = $stepA; // object_to_array($stepA);
+
+         	foreach ($stepB as $stepC) {
+         		$answersWithComments[$i]['comments'][$j] = $stepC;
+         		$j++;
+				}
+         	$i++;
+
+         };
+    	   dump ($answersWithComments);
+			// $answerComments = $this->comments->findAcomments($id);
+
+		   	$ress = $this->commentQs->query()
+            	->where('parentID = ?')
+            	->execute([$question->id]);
+				$commentss = object_to_array($ress);            
+*/            	   
+
+
+            
+            
+            
+CDATABASE commands and use.
+http://dbwebb.se/opensource/cdatabase
+
  /*   $aaa = new \stdClass();
 foreach ($one as $item => $value)
 {
@@ -66,3 +125,43 @@ foreach ($one as $item => $value)
 				'comments' => $userQuestions,
 				'title' => 'Visar användarens frågor och svar: ',
 			], 'main');
+			
+			
+			
+			
+			
+			
+			
+				 /**
+     * View all posts; questions by certain user.
+     *
+     * @return void
+     */
+	public function viewAllposts($id)
+	{    
+    	  $all = $this->query()
+           		->where('userID = ?')
+           		->execute([$id]);
+
+    	  $array = object_to_array($all);
+    	  
+    	  return $array;
+   }
+   
+   
+   
+   
+	  /**
+     * View all posts; answers by certain user.
+     *
+     * @return void
+     */
+	public function viewAllposts($id)
+	{    
+  	  	  $all = $this->query()
+           		->where('userID = "' . $id . '"')
+           		->execute();
+
+    	  $array = object_to_array($all);
+    	  return $array;
+   }
