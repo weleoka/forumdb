@@ -18,7 +18,7 @@
         <?php endif; ?>
     </h3>
 
-        <?php foreach ($answers as $answer) : ?>
+        <?php $i = 0; foreach ($answers as $answer) : ?>
 				<?php
 						$answerID = $answer['id'];
 						$voteUp = $this->url->create('forumdb/voteup/' . $answerID);
@@ -26,13 +26,16 @@
             //		$edit = $this->url->create('forumdb/edit/' . $answerID);
             //    $delete = $this->url->create('forumdb/delete/' . $answerID);
             		$commentA  = $this->url->create('forumdb/commenta/' . $answerID);
-            		$userHome = $this->url->create('users/id/' . $answerID);
+            		$userHome = $this->url->create('users/id/' . $answer['userID']);
+            		$questionHome = $this->url->create('forumdb/id/' . $answer['parentID']);
             ?>
 
-
-        		<div id="answer-<?=$id?>" class="commentUnit">
-
-            	<div class="commentBox">
+		  <?php if ($i % 2 == 0 ) : ?>
+        <div class="commentUnit even">
+		  <?php else : ?>        
+		  <div class="commentUnit odd">
+		  <?php endif; $i++; ?>
+        		  	<div class="commentBox">
 
                 	<div class="gravatar">
 
@@ -44,7 +47,9 @@
                 	<div class="commentData">
 
                     <a href="<?=$userHome?>"><?=$answer['name']?></a>
-
+                    Re:
+						  <a href="<?=$questionHome?>"><?=mb_substr(nl2br($answer['parentTitle']), 0, 35)?></a>						  
+						  
                     <time><?php echo $answer['timestamp']; ?></time>
 
                 	</div>
@@ -53,7 +58,8 @@
                     <?=nl2br($answer['content'])?>
                 	</p>
 
-
+				<?php if (!isset( $cleanView )) : ?>
+					<?php if (isset($_SESSION['user'])) : ?> 
                 	<div class="commentButtonsDiv">
 
 	                    <div class="commentButtons">
@@ -64,7 +70,7 @@
 							  </div>
 
                 	</div>
-
+					<?php endif; ?>
         		<?php
         					$this->db->select()
         				            ->from('commenta')
@@ -103,6 +109,7 @@
                 	  				</div>
                 	  		<?php endforeach; ?>
                 	  </div>
+            <?php endif; ?>
             </div>
         </div>
     <?php endforeach; ?>

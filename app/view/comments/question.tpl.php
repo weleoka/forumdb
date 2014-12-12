@@ -25,6 +25,7 @@
                     <?=nl2br($question->content)?>
                 </p>
 
+					 <?php if (isset($_SESSION['user'])) : ?> 
                 <div class="commentButtonsDiv">
 
  	                   <div class="commentButtons">
@@ -35,7 +36,7 @@
 							  </div>
 
                 </div>
-
+					 <?php endif; ?>
 
 
     	  <?php $numberOfcomments = count($comments); ?>

@@ -18,9 +18,13 @@
         <?php endif; ?>
     </h4>
 
-        <?php foreach ($questions as $question) : ?>
+        <?php $i = 0; foreach ($questions as $question) : ?>
 
-        <div id="question-<?=$id?>" class="commentUnit">
+		  <?php if ($i % 2 == 0 ) : ?>
+        <div class="commentUnit even">
+		  <?php else : ?>        
+		  <div class="commentUnit odd">
+		  <?php endif; $i++; ?>
 
             <div class="commentBox">
 

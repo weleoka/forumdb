@@ -53,6 +53,4 @@ echo "user created";
         $this->db->execute([$acronym]);
         return $this->db->fetchInto($this);
     }
-
-
 }

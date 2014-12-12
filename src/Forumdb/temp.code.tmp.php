@@ -1,5 +1,16 @@
 <?php 
 
+
+
+	<?php if (isset($_SESSION['user']) 
+			&& $_SESSION['user']['acronym'] = 'Admin' 
+			&& $_SESSION['user']['name'] = 'Administrator') : ?>
+<?php endif; ?>
+
+
+
+
+
 EDIT DELETE BUTTONS FROM ANSWERS.PHP
 		<a href="<?=$edit?>"><button class="smallButton" >Redigera</button></a>
 			<a href="<?=$delete?>"><button class="smallButton" >Ta bort</button></a>
@@ -165,3 +176,77 @@ foreach ($one as $item => $value)
     	  $array = object_to_array($all);
     	  return $array;
    }
+   
+   
+   
+   			$formOptions = [
+            // 'start'           => false,  // Only return the start of the form element
+            // 'columns' 	         => 1,      // Layout all elements in two columns
+            // 'use_buttonbar'   => true,   // Layout consequtive buttons as one element wrapped in <p>
+            // 'use_fieldset'    => true,   // Wrap form fields within <fieldset>
+            // 'legend'          => isset($this->form['legend']) ? $this->form['legend'] : null,   // Use legend for fieldset
+            // 'wrap_at_element' => false,  // Wraps column in equal size or at the set number of elements
+        	];
+   
+   
+   
+   /*****************************CommentQ CLASS***************************************************/
+   /**
+ * Find and return comments specific to answer.
+ *
+ * @return this
+ */
+	public function findComments($id)
+	{
+		if (isset($id)){
+    		$this->db->select()
+         	    ->from("comment")
+            	 ->where("type = 'questionComment'")
+             	 ->andWhere("parentID = ?");
+
+    		$this->db->execute([$id]);
+    		return $this->db->fetchInto($this);
+ 		} else {
+			echo "No comments found, sorry";
+ 		}
+	}	
+
+/**
+ * Find and return comments specific to answer.
+ *
+ * @return this
+ */
+	public function findAcomments($id)
+	{
+		if (isset($id)){
+    		$this->db->select()
+         	    ->from("comment")
+            	 ->where("type = 'answerComment'")
+             	 ->andWhere("parentID = ?");
+
+    		$this->db->execute([$id]);
+    		return $this->db->fetchInto($this);
+ 		} else {
+			echo "No comments found, sorry";
+ 		}
+	}
+/*
+	public function findAll($parentID)
+	{
+	  	$this->db->select()
+	  			->from($this->getSource())
+	  			->where('parentID = ?');
+     	$this->db->execute($parentID);
+     	return $this->db->fetchInto($this);
+	}
+*/
+/*
+public function findByName($acronym)
+    {
+echo "user created";     
+        $this->db->select()->from($this->getSource())->where('acronym = ?');
+        $this->db->execute([$acronym]);
+        return $this->db->fetchInto($this);
+    }
+
+*/

@@ -27,10 +27,6 @@ class Question extends \Weleoka\Forumdb\ForumdbModel
 	  	$url = $this->url->create('forumdb/view/' . $tab . '');
 	   $this->response->redirect($url);	        
 	}
-	
-	
-	
-
 }
 
 
