@@ -19,7 +19,7 @@
     </h4>
 
         <?php $i = 0; foreach ($questions as $question) : ?>
-
+	
 		  <?php if ($i % 2 == 0 ) : ?>
         <div class="commentUnit even">
 		  <?php else : ?>        
@@ -29,10 +29,7 @@
             <div class="commentBox">
 
                 <div class="gravatar">
-                    
-                    <img src="http://www.gravatar.com/avatar/<?=md5($question['email']);?>.jpg?s=60"><br>
-                   <hr>
-
+                   <img src="http://www.gravatar.com/avatar/<?=md5($question['email']);?>.jpg?s=60"><br>
                 </div>
 
                 <div class="commentData">
@@ -49,7 +46,7 @@
 
                 </div>
 					 <p class="commentContent">
-                    <?=mb_substr(nl2br($question['content']), 0, 35)?>...
+                    <?=mb_substr($question['content'], 0, 35)?>...
                     <a class="read-more" href="<?=$questionHome?>">Se frågan</a>
 
                    

@@ -48,14 +48,14 @@
 
                     <a href="<?=$userHome?>"><?=$answer['name']?></a>
                     Re:
-						  <a href="<?=$questionHome?>"><?=mb_substr(nl2br($answer['parentTitle']), 0, 35)?></a>						  
+						  <a href="<?=$questionHome?>"><?=mb_substr($answer['parentTitle'], 0, 35)?></a>						  
 						  
                     <time><?php echo $answer['timestamp']; ?></time>
 
                 	</div>
 
                 	<p class="commentContent">
-                    <?=nl2br($answer['content'])?>
+                    <?=$answer['content']?>
                 	</p>
 
 				<?php if (!isset( $cleanView )) : ?>
@@ -85,12 +85,10 @@
    	  		<?php $numberOfcomments = count($comments); ?>
 
         		<?php  if ($numberOfcomments == 0) : ?>
-        				  Inga kommentarer.
         		<?php elseif ($numberOfcomments == 1) : ?>
-        				  En kommentar.
+        				  Kommentarer (1).
         		<?php else : ?>
-        				  <?php echo $numberOfcomments; ?>
-        				  kommentarer.
+        				  Kommentarer (<?php echo $numberOfcomments; ?>).
         		<?php endif; ?>
 
        				  <div id="commentsDiv">
@@ -103,7 +101,7 @@
                     					<time><?php echo $comment['timestamp']; ?></time>
 
                     					<p class="commentContent">
-                    						<?=nl2br($comment['content'])?>
+                    						<?=$comment['content']?>
                     					</p>
 
                 	  				</div>

@@ -22,7 +22,7 @@
                     <time><?php echo $question->timestamp; ?></time>
                 </div>
 					 <p class="commentContent">
-                    <?=nl2br($question->content)?>
+                    <?=$question->content?>
                 </p>
 
 					 <?php if (isset($_SESSION['user'])) : ?> 
@@ -42,12 +42,10 @@
     	  <?php $numberOfcomments = count($comments); ?>
 
         <?php  if ($numberOfcomments == 0) : ?>
-        				  Inga kommentarer.
         <?php elseif ($numberOfcomments == 1) : ?>
-        				  En kommentar.
+        				  Kommentarer (1).
         <?php else : ?>
-        				  <?php echo $numberOfcomments; ?>
-        				  kommentarer.
+        				  kommentarer (<?php echo $numberOfcomments; ?>).
         <?php endif; ?>
         				  <div id="commentsDiv">
             		  		<?php foreach ($comments as $comment) : ?>
@@ -59,7 +57,7 @@
                     					<time><?php echo $comment['timestamp']; ?></time>
 
                     					<p class="commentContent">
-                    						<?=nl2br($comment['content'])?>
+                    						<?=$comment['content']?>
                     					</p>
                 	  					
                 	  				</div>

@@ -109,12 +109,14 @@ public function initialize()
 				if ($status === true) {
 					$this->forum->AddFeedback('Ditt svar har sparats.');
          		$url = $this->url->create('forumdb/id/' . $question->id . '');
-			   	$this->response->redirect($url);
+		header('Refresh: 3; URL='. $url);	
+	//	$this->response->redirect($url);
 
 				} else if ($status === false) {
 					$this->forum->AddFeedback('Ditt svar kunde inte sparas.');
 					$url = $this->url->create('forumdb/id/' . $question->id . '');
-			   	$this->response->redirect($url);
+		header('Refresh: 3; URL='. $url);	
+	//	$this->response->redirect($url);
 				}
 
 	//Here starts the rendering phase of actions if user login status true.
@@ -242,13 +244,15 @@ public function initialize()
          // What to do if the form was submitted?
 				$this->forum->AddFeedback('Frågan har sparats.');
          	$url = $this->url->create('forumdb/view/' . $tag . '');
-			   $this->response->redirect($url);
+		header('Refresh: 3; URL='. $url);	
+	//	$this->response->redirect($url);
 
 			} else if ($status === false) {
       	// What to do when form could not be processed?
 				$this->forum->AddFeedback('Frågan kunde inte sparas.');
 				$url = $this->url->create('forumdb/add/' . $tag . '');
-			   $this->response->redirect($url);
+		header('Refresh: 3; URL='. $url);	
+	//	$this->response->redirect($url);
 			}
 
 			//Here starts the rendering phase of the add action
@@ -295,11 +299,43 @@ public function initialize()
      		$sidebar .= '<p><i class="fa fa-plus"></i><a href="' . $url . '/forumdb/addtag"> Lägg till tag</a></p>';
      		$sidebar .= '<p><i class="fa fa-refresh"></i><a href="' . $url . '/setupComments"> Nolställ DB</a></p>';
 	  }
+	  $this->createMenu();
 	  return $sidebar;
 	}
 
 
 
+/**
+ * Generate navigation menu choices from forum categories.
+ *
+ * @param
+ *
+ * @return array menu
+ */
+	public function createMenu()   
+   {
+	   $categories = $this->tags->getTags();
+   
+	   $i = 1;
+		foreach ($categories as $category) {
+		$out['item ' . $i]  ['text'] 	= $category;
+		$out['item ' . $i]  ['url']	= 'forumdb/view/' . $category;
+		$out['item ' . $i]  ['title']	= $category;
+		$i++;
+		}	  
+//	  	dump ($out);
+		return $out;	   
+   }
+   /*
+   			$_SESSION['timeout']['startPoint'] = time();
+			$_SESSION['timeout']['TTL'] = 600;	
+     // This is a menu item of the submenu
+                    'item 1'  => [
+                        'text'  => 'Kategorier.',   
+                        'url'   => 'forumdb/viewtags',  
+                        'title' => 'Forumkategorier.'
+                    ],
+*/
 /* ------------------------------ COMMENT HANDLING -----------------------------------*/
 
 /*
@@ -322,7 +358,8 @@ public function initialize()
 
 		$this->forum->AddFeedback('Din kommentar sparades.');
 		$url = $this->url->create('forumdb/id/' . $id . '');
-		$this->response->redirect($url);
+		header('Refresh: 2; URL='. $url);	
+	//	$this->response->redirect($url);
 	}
 
 /*
@@ -345,7 +382,8 @@ public function initialize()
 
 		$this->forum->AddFeedback('Din kommentar sparades.');
 		$url = $this->url->create('forumdb/id/' . $id . '');
-		$this->response->redirect($url);
+		header('Refresh: 2; URL='. $url);
+		// $this->response->redirect($url);
 	}
 
 

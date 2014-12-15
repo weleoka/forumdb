@@ -21,6 +21,7 @@ class Tag extends \Weleoka\Forumdb\ForumdbModel
 		foreach ($tags as $tag) {
 			$aaa[$tag->tag] = $tag->tag;
 		} 
+
 		return $aaa;
 	}
 	
