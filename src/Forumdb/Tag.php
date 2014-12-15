@@ -42,6 +42,37 @@ class Tag extends \Weleoka\Forumdb\ForumdbModel
 		}
 		return $html;
 	}
+
+
+
+/*
+ * Generate HTML list of tags with links.
+ *
+ * @return tagsArray
+ */
+	public function menuTags () 
+	{
+		$tags = $this->query()
+            ->execute();
+      $menu = array($tag => $tag);
+      dump ($menu);
+	//	foreach ($tags as $tag) {
+	//		$menu = $this->url->create('forumdb/view/' . $tag->tag);
+	//		$html .= '<a href="' . $show . '"><button class="smallButton" >' . $tag->tag . '</button></a>';	
+	//	}
+	/*	
+		        // This is a menu item of the submenu
+                    'item 1'  => [
+                        'text'  => 'Kategorier.',   
+                        'url'   => 'forumdb/viewtags',  
+                        'title' => 'Forumkategorier.'
+                    ],
+*/	
+	}
+	
+	
+	
+	
 }
 
 

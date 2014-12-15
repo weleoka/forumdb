@@ -41,7 +41,7 @@ public function initialize()
  */
 	public function idAction($id = null)
 	{
-			$pageTimeGeneration = microtime(true);
+	//		$pageTimeGeneration = microtime(true);
 
 	// Find the question by question ID and set windowbar title..
 			$question = $this->questions->find($id);			
@@ -90,7 +90,7 @@ public function initialize()
 								'parentID'  	=> $question->id,
 								'parentTitle' 	=> $question->title,
                         'name'			=> $user->name,
-                        'content'		=> $form->Value('content'),
+                        'content'		=> $this->textFilter->doFilter($form->Value('content') , 'shortcode, markdown'),
                         'email'			=> $user->email,
                         'timestamp' 	=> getTime(),
 						]);
@@ -136,10 +136,10 @@ public function initialize()
     			]);
     		}
 
-	// This is my silly litte lazy timer for this function.
-    		if(isset($pageTimeGeneration)) {
-  				echo "<p>Page generated in " . round(microtime(true)-$pageTimeGeneration, 5) . " seconds</p>";
-  			}
+	// This is my silly litte lazy timer for this function. Start it at beginning of function.
+   // 		if(isset($pageTimeGeneration)) {
+  	//			echo "<p>Page generated in " . round(microtime(true)-$pageTimeGeneration, 5) . " seconds</p>";
+  	//		}
 	}
 
 
@@ -196,16 +196,14 @@ public function initialize()
 				$form = $form->create([], [
 					'title' => [
 						'type'        => 'text',
-						'label'       => 'Fråga',
-						'required'    => true,
+						'label'       => '',
 						'placeholder' => 'Frågans titel.',
 						'validation'  => ['not_empty'],
 					],
 					'content' => [
 						'type'        => 'textarea',
-						'label'       => 'Kommentar',
-						'required'    => true,
-						'placeholder' => 'Kommentar',
+						'label'       => '',
+						'placeholder' => 'Kommentar eller fråga',
 						'validation'  => ['not_empty'],
 					],
 				  'tag' => [
@@ -215,7 +213,7 @@ public function initialize()
     					'options' 	=> $selectOptions,
 
   					],
-					'submit' => [
+					'skicka' => [
 						'type'      => 'submit',
 						'class'		=> 'bigButton',
 						'callback'  => function($form) use ($tag){
@@ -223,10 +221,10 @@ public function initialize()
 						$user = $this->forum->getUser();
 
 						$this->questions->save([
-								'title'		=> $form->Value('title'),
+								'title'		=> $this->textFilter->doFilter($form->Value('title') , 'shortcode, markdown'),
 								'userID'		=> $user->id,
                         'name'		=> $user->name,
-                        'content'	=> $form->Value('content'),
+                        'content'	=> $this->textFilter->doFilter($form->Value('content') , 'shortcode, markdown'),
                         'email'		=> $user->email,
                         'timestamp' => getTime(),
                         'tag'			=> $form->Value('tag'),
@@ -254,16 +252,20 @@ public function initialize()
 			}
 
 			//Here starts the rendering phase of the add action
-			$this->theme->setTitle("Lägg till kommentar");
+			$this->theme->setTitle("Skriv nytt inlägg");
 
 	      $this->views->add('kmom03/page1', [
-	    		'content' => $this->sidebarGen( is_string($tag) ? $tag : null),
+	    		'content' => $this->sidebarGen( is_string($tag) ? $tag : null ),
        		],'sidebar');
-
+       		
+			$this->views->add('me/page', [
+				'content' => 'asdfasfasdfasfd',
+			],'featured-1');
+			
 			$this->views->add('comments/add', [
-				'content' =>$form->getHTML(),
-				'title' => 'Skapa en ny kommentar',
-			]);
+				'content' => $form->getHTML(),
+				'title' => 'Skapa en nytt inlägg.',
+			],'main');
 	}
 
 
@@ -279,15 +281,15 @@ public function initialize()
  */
 	public function sidebarGen($tag = null)
 	{
-	  $user = new \Weleoka\Users\User();
 	  $url = $this->url->create('');
 	  $categories = $this->tags->getTags();
      $sidebar = '<p><i class="fa fa-plus">    </i> <a href="' . $url . '/forumdb/add/' . $tag . '"> Ny fråga</a></p>
 					  <p>Forum kategorier:</p>
 					  <p><i class="fa fa-list-ol"></i><a href="' . $url . '/forumdb/view"> Alla</a></p>';
 					  foreach ( $categories as $category ) {
-                 $sidebar .= '<p><i class="fa fa-leaf"></i><a href="' . $url . '/forumdb/view/' . $category . '"> ' . $category . '</a></p>';
+                 $sidebar .= '<p><i class="fa fa-anchor"></i><a href="' . $url . '/forumdb/view/' . $category . '"> ' . $category . '</a></p>';
                  };
+     $user = new \Weleoka\Users\User();
      if ($user->isAdmin()) {
      		$sidebar .= '--- admin ---';
      		$sidebar .= '<p><i class="fa fa-plus"></i><a href="' . $url . '/forumdb/addtag"> Lägg till tag</a></p>';
