@@ -45,18 +45,64 @@ class Tag extends \Weleoka\Forumdb\ForumdbModel
 	}
 
 
-
 /*
- * Generate HTML list of tags with links.
+ * Find specific tag row.
+ *
+ * @return object 
+ */
+public function findTag($acronym)
+    {    
+        $this->db->select()
+        		->from($this->getSource())
+        		->where('tag = ?');
+        $this->db->execute([$acronym]);
+        return $this->db->fetchInto($this);
+    }
+    
+    
+    
+/*
+ * Generate HTML list of top 3 tags with links.
  *
  * @return tagsArray
  */
+	public function topTags()
+	{
+		      
+      $this->db->select('tag, questionCount')
+      			->from($this->getSource())
+      			->orderBy('questionCount DESC');
+      $this->db->execute();
+      $this->db->setFetchModeClass(__CLASS__);
+      $tags = $this->db->fetchAll();
+
+      $html = 'Populäraste forumkategorierna:<br>';
+		$i = 0;
+  		foreach ($tags as $tag) {
+			$show = $this->url->create('forumdb/view/' . $tag->tag);
+			$html .= '<a href="' . $show . '">' . $tag->tag . '</a> med ' . $tag->questionCount . ' inlägg.<br>';
+			$i++;
+			if ($i >= 3) { break; };
+		}
+		return $html;
+	}
+
+
+/* ------------------------------ RETIRED FUNCTIONS-------------------------------------*/
+/*
+ * Generate array of all tags formatted for Anax-MVC Navbar.
+ *
+ * @return array tagsArray
+ *
 	public function menuTags () 
 	{
 		$tags = $this->query()
             ->execute();
       $menu = array($tag => $tag);
       dump ($menu);
+      
+
+
 	//	foreach ($tags as $tag) {
 	//		$menu = $this->url->create('forumdb/view/' . $tag->tag);
 	//		$html .= '<a href="' . $show . '"><button class="smallButton" >' . $tag->tag . '</button></a>';	
@@ -68,11 +114,21 @@ class Tag extends \Weleoka\Forumdb\ForumdbModel
                         'url'   => 'forumdb/viewtags',  
                         'title' => 'Forumkategorier.'
                     ],
-*/	
-	}
-	
-	
-	
+                    
+                    
+
+
+
+	public function findByName($acronym)
+   {
+	echo "searching for user";
+        $this->db->select()
+        		->from($this->getSource())
+        		->where('acronym = ?');
+        $this->db->execute([$acronym]);
+        return $this->db->fetchInto($this);
+   }
+*/		
 	
 }
 

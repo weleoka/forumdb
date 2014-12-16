@@ -30,10 +30,32 @@ public function initialize()
         $this->tags->setDI($this->di);
     }
 
+/**
+ * Get popular forum categories and generate view, public action.
+ *
+ * @param int $id of user to display
+ *
+ * @return void
+ */
+	public function popularAction()
+	{
+      	$this->views->add('kmom03/page1', [
+	    			'content' => $this->tags->topTags(),
+      	],'featured-1');
+
+      	$this->views->add('kmom03/page1', [
+	    			'content' => $this->forum->topUsers(),
+      	],'featured-2');
+      	
+      	$this->views->add('kmom03/page1', [
+	    			'content' => $this->questions->newPosts(),
+      	],'featured-3');
+	}
+
 
 
 /**
- * List question with id.
+ * List question with id, public and user action.
  *
  * @param int $id of user to display
  *
@@ -41,12 +63,10 @@ public function initialize()
  */
 	public function idAction($id = null)
 	{
-	//		$pageTimeGeneration = microtime(true);
-
 	// Find the question by question ID and set windowbar title..
-			$question = $this->questions->find($id);			
+			$question = $this->questions->find($id);
 			$this->theme->setTitle("Fråga: " . $question->title);
-			
+
 	// Find the questionComments, then add question and questionComments to view..
 		   $all = $this->commentQs->query()
             ->where('parentID = ?')
@@ -62,14 +82,14 @@ public function initialize()
 		   $all = $this->answers->query()
             ->where('parentID = ?')
             ->execute([$question->id]);
-			$answers = object_to_array($all);			
+			$answers = object_to_array($all);
          $this->views->add('comments/answers', [
             'answers' => $answers,
             'title'	  => '',
-         ]);			
+         ]);
 
 	// Check if there is a user logged on then generate Submit new Answer form.
-			if (isset($_SESSION['user'])) {
+			if ($this->forum->userIsAuthenticated()) {
 				$form = $this->form;
 				$form = $form->create([], [
 					'content' => [
@@ -84,6 +104,9 @@ public function initialize()
 						'callback'  => function($form) use ($question){
 
              		$user = $this->forum->getUser();
+   // This logs the contribution and resets session TTL.
+						$this->forum->userContributionLog($user);
+						$this->forum->resetTTL();
 
 						$this->answers->save([
 								'userID'			=> $user->id,
@@ -95,7 +118,7 @@ public function initialize()
                         'timestamp' 	=> getTime(),
 						]);
 	// For each answer added increase the answerCount of question.
-						$parameters['answerCount'] = $question->answerCount + 1;			
+						$parameters['answerCount'] = $question->answerCount + 1;
 						$this->questions->update($parameters);
 
 						return true;
@@ -109,19 +132,19 @@ public function initialize()
 				if ($status === true) {
 					$this->forum->AddFeedback('Ditt svar har sparats.');
          		$url = $this->url->create('forumdb/id/' . $question->id . '');
-		header('Refresh: 3; URL='. $url);	
-	//	$this->response->redirect($url);
+					//	header('Refresh: 3; URL='. $url);
+					$this->response->redirect($url);
 
 				} else if ($status === false) {
 					$this->forum->AddFeedback('Ditt svar kunde inte sparas.');
 					$url = $this->url->create('forumdb/id/' . $question->id . '');
-		header('Refresh: 3; URL='. $url);	
-	//	$this->response->redirect($url);
+					//	header('Refresh: 3; URL='. $url);
+					$this->response->redirect($url);
 				}
 
 	//Here starts the rendering phase of actions if user login status true.
 	      	$this->views->add('kmom03/page1', [
-	    			'content' => $this->sidebarGen($question->tag),
+	    			'content' => $this->forum->sidebarGen($question->tag),
        			],'sidebar');
 
 				$this->views->add('comments/add', [
@@ -137,17 +160,12 @@ public function initialize()
         			'content' => '<i class="fa fa-square-o"></i><a href="' . $url . '/users/login/' . $id . '"> Logga in</a> för att skriva inlägg',
     			]);
     		}
-
-	// This is my silly litte lazy timer for this function. Start it at beginning of function.
-   // 		if(isset($pageTimeGeneration)) {
-  	//			echo "<p>Page generated in " . round(microtime(true)-$pageTimeGeneration, 5) . " seconds</p>";
-  	//		}
 	}
 
 
 
     /**
-     * View all comments questions under specific tag.
+     * View all comments questions under specific tag, public action.
      *
      * @return void
      */
@@ -156,9 +174,7 @@ public function initialize()
 		  $this->theme->setTitle("Alla Frågor");
 
 		  if (isset($tag)) {
-    	  		$all = $this->questions->query()
-            		->where('tag = ?')
-            		->execute([$tag]);
+				$all = $this->questions->getbyTag($tag);
             $category = $tag;
         } else {
 				$all = $this->questions->query()
@@ -174,7 +190,7 @@ public function initialize()
         ]);
 
         $this->views->add('kmom03/page1', [
-	    		'content' => $this->sidebarGen($tag),
+	    		'content' => $this->forum->sidebarGen($tag),
         ],'sidebar');
 	}
 
@@ -183,18 +199,19 @@ public function initialize()
 /* ---------------------------- QUESTION ADD, (EDIT) (and DELETE) -----------------------------------*/
 
     /**
-     * Add a question.
+     * Add a question, user action.
      *
      * @return void
      */
 	public function addAction($tag = null)
 	{
-		if (!isset($tag)) {		
+		if (!isset($tag)) {
 			$selectOptions = $this->tags->getTags();
 		} else {
-			$selectOptions = array($tag => $tag);		
-		};
-      $form = $this->form;
+			$selectOptions = array($tag => $tag);
+		}
+		if ($this->forum->userIsAuthenticated()) {
+      	 $form = $this->form;
 				$form = $form->create([], [
 					'title' => [
 						'type'        => 'text',
@@ -219,8 +236,11 @@ public function initialize()
 						'type'      => 'submit',
 						'class'		=> 'bigButton',
 						'callback'  => function($form) use ($tag){
-						
-						$user = $this->forum->getUser();
+
+   // This logs the contribution and resets session TTL.
+   					$user = $this->forum->getUser();
+						$this->forum->userContributionLog($user);
+						$this->forum->resetTTL();
 
 						$this->questions->save([
 								'title'		=> $this->textFilter->doFilter($form->Value('title') , 'shortcode, markdown'),
@@ -232,6 +252,10 @@ public function initialize()
                         'tag'			=> $form->Value('tag'),
                         'answerCount'	=> 0,
 						]);
+						// log the question to tag table in questionCount
+						$taglog = $this->tags->findTag($form->Value('tag'));
+						$parameters['questionCount'] = $taglog->questionCount + 1;
+						$this->tags->update($parameters);
 						return true;
 					}
 				],
@@ -244,146 +268,98 @@ public function initialize()
          // What to do if the form was submitted?
 				$this->forum->AddFeedback('Frågan har sparats.');
          	$url = $this->url->create('forumdb/view/' . $tag . '');
-		header('Refresh: 3; URL='. $url);	
-	//	$this->response->redirect($url);
+				// header('Refresh: 3; URL='. $url);
+				$this->response->redirect($url);
 
 			} else if ($status === false) {
       	// What to do when form could not be processed?
 				$this->forum->AddFeedback('Frågan kunde inte sparas.');
 				$url = $this->url->create('forumdb/add/' . $tag . '');
-		header('Refresh: 3; URL='. $url);	
-	//	$this->response->redirect($url);
+				// header('Refresh: 3; URL='. $url);
+				$this->response->redirect($url);
 			}
 
 			//Here starts the rendering phase of the add action
 			$this->theme->setTitle("Skriv nytt inlägg");
 
 	      $this->views->add('kmom03/page1', [
-	    		'content' => $this->sidebarGen( is_string($tag) ? $tag : null ),
+	    		'content' => $this->forum->sidebarGen( is_string($tag) ? $tag : null ),
        		],'sidebar');
-       		
+
 			$this->views->add('me/page', [
-				'content' => 'asdfasfasdfasfd',
+				'content' => '',
 			],'featured-1');
-			
+
 			$this->views->add('comments/add', [
 				'content' => $form->getHTML(),
 				'title' => 'Skapa en nytt inlägg.',
 			],'main');
+		} else
+			$this->forum->kickOutBaddie();
 	}
 
 
 
-/* ---------------------------- SIDEBAR FOR FORUM -----------------------------------*/
-
-/**
- * Generate sidebar content.
- *
- * @param
- *
- * @return sidebar
- */
-	public function sidebarGen($tag = null)
-	{
-	  $url = $this->url->create('');
-	  $categories = $this->tags->getTags();
-     $sidebar = '<p><i class="fa fa-plus">    </i> <a href="' . $url . '/forumdb/add/' . $tag . '"> Ny fråga</a></p>
-					  <p>Forum kategorier:</p>
-					  <p><i class="fa fa-list-ol"></i><a href="' . $url . '/forumdb/view"> Alla</a></p>';
-					  foreach ( $categories as $category ) {
-                 $sidebar .= '<p><i class="fa fa-anchor"></i><a href="' . $url . '/forumdb/view/' . $category . '"> ' . $category . '</a></p>';
-                 };
-     $user = new \Weleoka\Users\User();
-     if ($user->isAdmin()) {
-     		$sidebar .= '--- admin ---';
-     		$sidebar .= '<p><i class="fa fa-plus"></i><a href="' . $url . '/forumdb/addtag"> Lägg till tag</a></p>';
-     		$sidebar .= '<p><i class="fa fa-refresh"></i><a href="' . $url . '/setupComments"> Nolställ DB</a></p>';
-	  }
-	  $this->createMenu();
-	  return $sidebar;
-	}
-
-
-
-/**
- * Generate navigation menu choices from forum categories.
- *
- * @param
- *
- * @return array menu
- */
-	public function createMenu()   
-   {
-	   $categories = $this->tags->getTags();
-   
-	   $i = 1;
-		foreach ($categories as $category) {
-		$out['item ' . $i]  ['text'] 	= $category;
-		$out['item ' . $i]  ['url']	= 'forumdb/view/' . $category;
-		$out['item ' . $i]  ['title']	= $category;
-		$i++;
-		}	  
-//	  	dump ($out);
-		return $out;	   
-   }
-   /*
-   			$_SESSION['timeout']['startPoint'] = time();
-			$_SESSION['timeout']['TTL'] = 600;	
-     // This is a menu item of the submenu
-                    'item 1'  => [
-                        'text'  => 'Kategorier.',   
-                        'url'   => 'forumdb/viewtags',  
-                        'title' => 'Forumkategorier.'
-                    ],
-*/
 /* ------------------------------ COMMENT HANDLING -----------------------------------*/
 
 /*
- * Insert comment on Question.
+ * Insert comment on Question, user action.
  *
  * @return array
  */
 	public function commentqAction ($id)
 	{
-		$comment = $_POST['comment'];
-		$user = $this->forum->getUser();
+		if ($this->forum->userIsAuthenticated()) {
+			$comment = $_POST['comment'];
+			$user = $this->forum->getUser();
 
-		$this->commentQs->save([
+			$this->commentQs->save([
 				'parentID'  => $id,
 				'userID'		=> $user->id,
             'name'		=> $user->name,
             'content'	=> $comment,
             'timestamp' => getTime(),
-		]);
-
-		$this->forum->AddFeedback('Din kommentar sparades.');
-		$url = $this->url->create('forumdb/id/' . $id . '');
-		header('Refresh: 2; URL='. $url);	
-	//	$this->response->redirect($url);
+			]);
+			
+			$this->forum->resetTTL();
+			$this->forum->AddFeedback('Din kommentar sparades.');
+			$url = $this->url->create('forumdb/id/' . $id . '');
+			// header('Refresh: 2; URL='. $url);
+			$this->response->redirect($url);
+		} else {
+			$this->forum->kickOutBaddie();
+		}
 	}
 
+
+
 /*
- * Insert comment on Answer.
+ * Insert comment on Answer, user action.
  *
  * @return array
  */
 	public function commentaAction ($id)
 	{
-		$comment = $_POST['comment'];
-		$user = $this->forum->getUser();
+		if ($this->forum->userIsAuthenticated()) {
+			$comment = $_POST['comment'];
+			$user = $this->forum->getUser();
 
-		$this->commentAs->save([
+			$this->commentAs->save([
 				'parentID'  => $id,
 				'userID'		=> $user->id,
             'name'		=> $user->name,
             'content'	=> $comment,
             'timestamp' => getTime(),
-		]);
-
-		$this->forum->AddFeedback('Din kommentar sparades.');
-		$url = $this->url->create('forumdb/id/' . $id . '');
-		header('Refresh: 2; URL='. $url);
-		// $this->response->redirect($url);
+			]);
+			
+			$this->forum->resetTTL();
+			$this->forum->AddFeedback('Din kommentar sparades.');
+			$url = $this->url->create('forumdb/id/' . $id . '');
+			// header('Refresh: 2; URL='. $url);
+			$this->response->redirect($url);
+		} else {
+			$this->forum->kickOutBaddie();
+		}
 	}
 
 
@@ -396,7 +372,8 @@ public function initialize()
  * @return array
  */
 	public function addtagAction() {
-		$form = $this->form;
+		if ($this->forum->userIsAdmin()) {
+			 $form = $this->form;
 				$form = $form->create([], [
 					'tag' => [
 						'type'        => 'text',
@@ -422,12 +399,14 @@ public function initialize()
 
 			if ($status === true) {
          // What to do if the form was submitted?
+         	$this->forum->resetTTL();
 				$this->forum->AddFeedback('Den nya taggen är nu sparad.');
          	$url = $this->url->create('forumdb/addtag');
 			   $this->response->redirect($url);
 
 			} else if ($status === false) {
       	// What to do when form could not be processed?
+      		$this->forum->resetTTL();
 				$this->forum->AddFeedback('Den nya taggen kunde inte skapas.');
 				$url = $this->url->create('forumdb/addtag');
 			   $this->response->redirect($url);
@@ -439,19 +418,22 @@ public function initialize()
 			$tagsHTML = $this->tags->listTags();
 
 	      $this->views->add('kmom03/page1', [
-	    		'content' => $this->sidebarGen(),
+	    		'content' => $this->forum->sidebarGen(),
        		],'sidebar');
 
 			$this->views->add('comments/add', [
 				'content' => $tagsHTML . $form->getHTML(),
 				'title' => '<h2>Skapa en ny tag.</h2>',
 			]);
+		} else {
+			$this->forum->kickOutBaddie();
+		}
 	}
 
 
 
 	 /**
-     * View all the different tags.
+     * View all the different tags, public action.
      *
      * @return void
      */
@@ -464,10 +446,9 @@ public function initialize()
        		],'main');
 
         $this->views->add('kmom03/page1', [
-	    		'content' => $this->sidebarGen(),
+	    		'content' => $this->forum->sidebarGen(),
         ],'sidebar');
 	}
-
 
 
 
