@@ -54,6 +54,7 @@ class Forum extends \Weleoka\Forumdb\ForumdbModel
 	{
 		$count = $contributor->contributionCount + 1;		
 		$_SESSION['user']['contributionCount'] = $count;
+/*		
 		$sql = "
 			UPDATE phpmvc_user
 			SET
@@ -61,6 +62,14 @@ class Forum extends \Weleoka\Forumdb\ForumdbModel
 			WHERE id = ?
 			;";
 		$this->db->execute($sql, [$count , $contributor->id]);
+		*/
+		$this->db->update(
+    		'user',
+    		['contributionCount'],
+    		"id = ?"
+		);
+		$this->db->execute([$count , $contributor->id]);
+
 	}
 
 /*
@@ -181,33 +190,13 @@ class Forum extends \Weleoka\Forumdb\ForumdbModel
      		$sidebar .= '<p><i class="fa fa-plus"></i><a href="' . $url . '/forumdb/addtag"> Lägg till tag</a></p>';
      		$sidebar .= '<p><i class="fa fa-refresh"></i><a href="' . $url . '/setupComments"> Nolställ DB</a></p>';
 	  }
-	  $this->createMenu();
+
 	  return $sidebar;
 	}
 
 
 
-/**
- * Generate navigation menu choices from forum categories(tags).
- *
- * @param
- *
- * @return array menu
- */
-	public function createMenu()
-   {
-	   $categories = $this->forumTags();
 
-	   $i = 1;
-		foreach ($categories as $category) {
-		$out['item ' . $i]  ['text'] 	= $category->tag;
-		$out['item ' . $i]  ['url']	= 'forumdb/view/' . $category->tag;
-		$out['item ' . $i]  ['title']	= $category->tag;
-		$i++;
-		}
-//	  	dump ($out);
-		return $out;
-   }
 
 
 

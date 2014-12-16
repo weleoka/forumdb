@@ -30,6 +30,34 @@ public function initialize()
         $this->tags->setDI($this->di);
     }
 
+
+/**
+ * Generate navigation menu choices from forum categories(tags).
+ *
+ * @param
+ *
+ * @return array menu
+ */
+	public function createMenu()
+   {
+		$this->forum = new \Weleoka\Forumdb\Forum();
+      $this->forum->setDI($this->di);
+        	   
+	   $categories = $this->forum->forumTags();
+
+	   $i = 1;
+		foreach ($categories as $category) {
+   			$out['item ' . $i++] = [
+      						'text'  => $category->tag,
+      						'url'    => 'forumdb/view/' . $category->tag,
+      						'title'  => $category->tag,
+   			];
+		}	
+		return $out;
+   }
+
+
+
 /**
  * Get popular forum categories and generate view, public action.
  *
@@ -113,7 +141,7 @@ public function initialize()
 								'parentID'  	=> $question->id,
 								'parentTitle' 	=> $question->title,
                         'name'			=> $user->name,
-                        'content'		=> $this->textFilter->doFilter($form->Value('content') , 'shortcode, markdown'),
+                        'content'		=> $this->textFilter->doFilter($form->Value('content') , 'markdown'),
                         'email'			=> $user->email,
                         'timestamp' 	=> getTime(),
 						]);
@@ -171,6 +199,7 @@ public function initialize()
      */
 	public function viewAction($tag = null)
 	{
+		  $tag = urldecode($tag);		  
 		  $this->theme->setTitle("Alla Frågor");
 
 		  if (isset($tag)) {
@@ -243,10 +272,10 @@ public function initialize()
 						$this->forum->resetTTL();
 
 						$this->questions->save([
-								'title'		=> $this->textFilter->doFilter($form->Value('title') , 'shortcode, markdown'),
+								'title'		=> $this->textFilter->doFilter($form->Value('title') , 'bbcode'),
 								'userID'		=> $user->id,
                         'name'		=> $user->name,
-                        'content'	=> $this->textFilter->doFilter($form->Value('content') , 'shortcode, markdown'),
+                        'content'	=> $this->textFilter->doFilter($form->Value('content') , 'markdown'),
                         'email'		=> $user->email,
                         'timestamp' => getTime(),
                         'tag'			=> $form->Value('tag'),
@@ -338,7 +367,7 @@ public function initialize()
  *
  * @return array
  */
-	public function commentaAction ($id)
+	public function commentaAction ($id, $parent)
 	{
 		if ($this->forum->userIsAuthenticated()) {
 			$comment = $_POST['comment'];
@@ -354,7 +383,7 @@ public function initialize()
 			
 			$this->forum->resetTTL();
 			$this->forum->AddFeedback('Din kommentar sparades.');
-			$url = $this->url->create('forumdb/id/' . $id . '');
+			$url = $this->url->create('forumdb/id/' . $parent . '');
 			// header('Refresh: 2; URL='. $url);
 			$this->response->redirect($url);
 		} else {

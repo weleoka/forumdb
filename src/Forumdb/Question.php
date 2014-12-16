@@ -33,8 +33,7 @@ class Question extends \Weleoka\Forumdb\ForumdbModel
  * @return tagsArray
  */
 	public function newPosts()
-	{
-		      
+	{	      
       $this->db->select('id, title')
       			->from($this->getSource())
       			->orderBy('timestamp DESC');
@@ -45,8 +44,9 @@ class Question extends \Weleoka\Forumdb\ForumdbModel
       $html = 'Senaste frågorna:<br>';
 		$i = 0;
   		foreach ($posts as $post) {
+  			$title['title'] = $post->title;
 			$show = $this->url->create('forumdb/id/' . $post->id);
-			$html .= '<a href="' . $show . '">' . $post->title . '</a><br>';
+			$html .= '<a href="' . $show . '">' . mb_substr($title['title'], 0, 45) . '</a><br>';
 			$i++;
 			if ($i >= 3) { break; };
 		}
