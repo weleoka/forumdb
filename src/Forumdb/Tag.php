@@ -80,9 +80,10 @@ public function findTag($acronym)
 		$i = 0;
   		foreach ($tags as $tag) {
 			$show = $this->url->create('forumdb/view/' . $tag->tag);
-			$html .= '<a href="' . $show . '">' . $tag->tag . '</a> med ' . $tag->questionCount . ' inlägg.<br>';
+			$html .= '<a href="' . $show . '">' . $tag->tag . '</a> med ' . $tag->questionCount . ' inlägg.';
 			$i++;
 			if ($i >= 3) { break; };
+			$html .= '<br>';
 		}
 		return $html;
 	}

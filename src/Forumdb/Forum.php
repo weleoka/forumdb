@@ -149,9 +149,10 @@ class Forum extends \Weleoka\Forumdb\ForumdbModel
 		$i = 0;
   		foreach ($users as $user) {
 			$show = $this->url->create('users/id/' . $user->id);
-			$html .= '<a href="' . $show . '">' . $user->name . '</a> med ' . $user->contributionCount . ' inlägg.<br>';
+			$html .= '<a href="' . $show . '">' . $user->name . '</a> med ' . $user->contributionCount . ' inlägg.';
 			$i++;
 			if ($i >= 3) { break; };
+			$html .= '<br>';
 		}
 		return $html;
 	}

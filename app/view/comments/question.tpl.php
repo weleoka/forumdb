@@ -1,5 +1,3 @@
-<hr>
-
 <?php
 		if (isset($title)) {
 				echo "<h4>" . $title . "</h4>";
@@ -64,8 +62,16 @@
                 	  		<?php endforeach; ?>
                 	  </div>
 			 	</div>
+
+   	 <h3>
+        	<?php  if ($question->answerCount == 0) : ?>
+        	Inga svar.
+        	<?php elseif ($question->answerCount == 1) : ?>
+        	Ett svar.
+        	<?php else : ?>
+        	<?php echo $question->answerCount; ?>
+        	svar.
+        	<?php endif; ?>
+    	</h3>
         </div>
 </div>
-<?php
-
-?>

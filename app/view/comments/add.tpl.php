@@ -1,4 +1,4 @@
-<article class="article1">
+<article style="padding-left:80px" class="article1">
 
     <?php
     if (isset($tab)) {

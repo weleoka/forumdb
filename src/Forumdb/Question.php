@@ -46,9 +46,10 @@ class Question extends \Weleoka\Forumdb\ForumdbModel
   		foreach ($posts as $post) {
   			$title['title'] = $post->title;
 			$show = $this->url->create('forumdb/id/' . $post->id);
-			$html .= '<a href="' . $show . '">' . mb_substr($title['title'], 0, 45) . '</a><br>';
+			$html .= '<a href="' . $show . '">' . mb_substr($title['title'], 0, 30) . '</a>';
 			$i++;
 			if ($i >= 3) { break; };
+			$html .= '<br>';
 		}
 		return $html;
 	}

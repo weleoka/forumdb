@@ -76,7 +76,11 @@ public function initialize()
       	],'featured-2');
       	
       	$this->views->add('kmom03/page1', [
-	    			'content' => $this->questions->newPosts(),
+	    			'content' => '
+								<figure class="right">
+    									<br><img class="featured" src="img/cutter_small.png">
+								<figcaption></figcaption>
+								</figure>' . $this->questions->newPosts(),
       	],'featured-3');
 	}
 
@@ -198,17 +202,28 @@ public function initialize()
      * @return void
      */
 	public function viewAction($tag = null)
-	{
-		  $tag = urldecode($tag);		  
-		  $this->theme->setTitle("Alla Frågor");
+	{	  		  
+
 
 		  if (isset($tag)) {
+		  		$tag = urldecode($tag);
+		  	   $this->theme->setTitle("Kategori: " . $tag);
 				$all = $this->questions->getbyTag($tag);
             $category = $tag;
+    	  		$this->views->add('comments/add', [        
+        				'content' => null,
+        				'tag'		=> $tag,
+    	  ]);            
+            
         } else {
+        		$this->theme->setTitle("Alla Frågor");
 				$all = $this->questions->query()
 						->execute();
 				$category = "Allt";
+				$this->views->add('comments/add', [        
+        				'content' => null,
+        				'tag'		=> null,
+    	  ]);     
         }
     	  $array = object_to_array($all);
 
@@ -216,7 +231,7 @@ public function initialize()
             'questions' => $array,
             'tag'      	=> $tag,
             'title'	  	=> 'Frågor i kategori: ' . $category . '.',
-        ]);
+        ], 'main');
 
         $this->views->add('kmom03/page1', [
 	    		'content' => $this->forum->sidebarGen($tag),
@@ -314,10 +329,6 @@ public function initialize()
 	      $this->views->add('kmom03/page1', [
 	    		'content' => $this->forum->sidebarGen( is_string($tag) ? $tag : null ),
        		],'sidebar');
-
-			$this->views->add('me/page', [
-				'content' => '',
-			],'featured-1');
 
 			$this->views->add('comments/add', [
 				'content' => $form->getHTML(),
