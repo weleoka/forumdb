@@ -197,10 +197,6 @@ class Forum extends \Weleoka\Forumdb\ForumdbModel
 
 
 
-
-
-
-
 /*
  * Get object containing all forum tags, for use in the above functions.
  *
@@ -215,6 +211,7 @@ class Forum extends \Weleoka\Forumdb\ForumdbModel
      return $this->db->fetchAll();
 	}
 	
+
 	
 /******************************* RETIRED CODE **********************************************/
 /*

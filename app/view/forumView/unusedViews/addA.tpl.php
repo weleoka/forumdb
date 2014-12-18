@@ -1,7 +1,6 @@
-<article class="article1">
+<article class="">
 
     <?php
-
     if (isset($content)) {
         echo $content;
     }

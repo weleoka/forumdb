@@ -49,8 +49,8 @@ public function initialize()
 		foreach ($categories as $category) {
    			$out['item ' . $i++] = [
       						'text'  => $category->tag,
-      						'url'    => 'forumdb/view/' . $category->tag,
-      						'title'  => $category->tag,
+      						'url'   => 'forumdb/view/' . $category->tag,
+      						'title' => $category->tag,
    			];
 		}	
 		return $out;
@@ -106,7 +106,7 @@ public function initialize()
             ->execute([$question->id]);
 			$comments = object_to_array($all);
 			$url = $this->url->create('forumdb/view/' . $question->tag . '');
-			$this->views->add('comments/question', [
+			$this->views->add('forumView/question', [
 				'question' => $question,
 				'comments' => $comments,
 				'title' => $question->title . ' från kategorin: <a href="' . $url . '">' . $question->tag . '</a>',
@@ -117,7 +117,7 @@ public function initialize()
             ->where('parentID = ?')
             ->execute([$question->id]);
 			$answers = object_to_array($all);
-         $this->views->add('comments/answers', [
+         $this->views->add('forumView/answers', [
             'answers' => $answers,
             'title'	  => '',
          ]);
@@ -187,7 +187,7 @@ public function initialize()
 	    			'content' => $this->forum->sidebarGen($question->tag),
        			],'sidebar');
 
-				$this->views->add('comments/add', [
+				$this->views->add('forumView/add', [
 					'content' =>$form->getHTML(),
 					'title' => 'Skriv ett svar',
 				]);
@@ -216,7 +216,7 @@ public function initialize()
 		  	   $this->theme->setTitle("Kategori: " . $tag);
 				$all = $this->questions->getbyTag($tag);
             $category = $tag;
-    	  		$this->views->add('comments/add', [        
+    	  		$this->views->add('forumView/add', [        
         				'content' => null,
         				'tag'		=> $tag,
     	  ]);            
@@ -226,14 +226,14 @@ public function initialize()
 				$all = $this->questions->query()
 						->execute();
 				$category = "Allt";
-				$this->views->add('comments/add', [        
+				$this->views->add('forumView/add', [        
         				'content' => null,
         				'tag'		=> null,
     	  ]);     
         }
     	  $array = object_to_array($all);
 
-        $this->views->add('comments/questions', [
+        $this->views->add('forumView/questions', [
             'questions' => $array,
             'tag'      	=> $tag,
             'title'	  	=> 'Frågor i kategori: ' . $category . '.',
@@ -340,7 +340,7 @@ public function initialize()
 	    		'content' => $this->forum->sidebarGen( is_string($tag) ? $tag : null ),
        		],'sidebar');
 
-			$this->views->add('comments/add', [
+			$this->views->add('forumView/add', [
 				'content' => $form->getHTML(),
 				'title' => 'Skapa en nytt inlägg.',
 			],'main');
@@ -471,7 +471,7 @@ public function initialize()
 	    		'content' => $this->forum->sidebarGen(),
        		],'sidebar');
 
-			$this->views->add('comments/add', [
+			$this->views->add('forumView/add', [
 				'content' => $tagsHTML . $form->getHTML(),
 				'title' => '<h2>Skapa en ny tag.</h2>',
 			]);

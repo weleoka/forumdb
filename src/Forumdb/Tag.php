@@ -39,7 +39,7 @@ class Tag extends \Weleoka\Forumdb\ForumdbModel
             ->execute();
 		foreach ($tags as $tag) {
 			$show = $this->url->create('forumdb/view/' . $tag->tag);
-			$html .= '<a href="' . $show . '"><button class="smallButton" >' . $tag->tag . '</button></a>';	
+			$html .= '<a href="' . $show . '">' . $tag->tag . '</a>, ';	
 		}
 		return $html;
 	}
