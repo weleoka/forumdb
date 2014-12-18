@@ -67,11 +67,10 @@ public function findTag($acronym)
  * @return tagsArray
  */
 	public function topTags()
-	{
-		      
-      $this->db->select('tag, questionCount')
+	{		      
+      $this->db->select('tag, postCount')
       			->from($this->getSource())
-      			->orderBy('questionCount DESC');
+      			->orderBy('postCount DESC');
       $this->db->execute();
       $this->db->setFetchModeClass(__CLASS__);
       $tags = $this->db->fetchAll();
@@ -80,7 +79,7 @@ public function findTag($acronym)
 		$i = 0;
   		foreach ($tags as $tag) {
 			$show = $this->url->create('forumdb/view/' . $tag->tag);
-			$html .= '<a href="' . $show . '">' . $tag->tag . '</a> med ' . $tag->questionCount . ' inlägg.';
+			$html .= '<a href="' . $show . '">' . $tag->tag . '</a> med ' . $tag->postCount . ' inlägg.';
 			$i++;
 			if ($i >= 3) { break; };
 			$html .= '<br>';

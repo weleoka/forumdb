@@ -1,3 +1,5 @@
+<hr>
+
 <?php
 		if (isset($title)) {
 				echo "<h4>" . $title . "</h4>";
@@ -5,7 +7,16 @@
 		}
 ?>
  <div class="commentAll">
-
+    <h3>
+        <?php  if (count($answers) == 0) : ?>
+        Inga svar.
+        <?php elseif (count($answers) == 1) : ?>
+        Ett svar.
+        <?php else : ?>
+        <?php echo count($answers); ?>
+        svar.
+        <?php endif; ?>
+    </h3>
 
         <?php $i = 0; foreach ($answers as $answer) : ?>
 				<?php
@@ -14,7 +25,7 @@
             		$voteDown = $this->url->create('forumdb/votedown/' . $answerID);
             //		$edit = $this->url->create('forumdb/edit/' . $answerID);
             //    $delete = $this->url->create('forumdb/delete/' . $answerID);
-            		$commentA  = $this->url->create('forumdb/commenta/' . $answerID . '/' . $answer['parentID']);
+            		$commentA  = $this->url->create('forumdb/commenta/' . $answerID);
             		$userHome = $this->url->create('users/id/' . $answer['userID']);
             		$questionHome = $this->url->create('forumdb/id/' . $answer['parentID']);
             ?>

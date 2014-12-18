@@ -1,3 +1,5 @@
+<hr>
+
 <?php 
 		if (isset($title)) {
 				echo "<h4>" . $title . "</h4>";
@@ -44,8 +46,8 @@
 
                 </div>
 					 <p class="commentContent">
-                    <?=mb_substr($question['content'], 0, 35)?>
-                    <a class="read-more" href="<?=$questionHome?>"> Se hela frågan</a>
+                    <?=mb_substr($question['content'], 0, 35)?>...
+                    <a class="read-more" href="<?=$questionHome?>">Se frågan</a>
 
                    
 					<?php	if (!isset($tag)) : ?>

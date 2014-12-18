@@ -97,17 +97,19 @@ public function initialize()
 	{
 	// Find the question by question ID and set windowbar title..
 			$question = $this->questions->find($id);
+			$taglog = $this->tags->findTag($question->tag);
+			dump ($taglog->questionCount + 1);
 			$this->theme->setTitle("Fråga: " . $question->title);
-
 	// Find the questionComments, then add question and questionComments to view..
 		   $all = $this->commentQs->query()
             ->where('parentID = ?')
             ->execute([$question->id]);
 			$comments = object_to_array($all);
+			$url = $this->url->create('forumdb/view/' . $question->tag . '');
 			$this->views->add('comments/question', [
 				'question' => $question,
 				'comments' => $comments,
-				'title' => 'Visar frågan: ',
+				'title' => $question->title . ' från kategorin: <a href="' . $url . '">' . $question->tag . '</a>',
 			]);
 
 	// Find Answers to Question found above, then add answers to view.
@@ -162,6 +164,12 @@ public function initialize()
 				$status = $form->check();
 
 				if ($status === true) {
+	// Update the total number of posts under forum tag.
+					$this->forum->resetTTL();				
+					$taglog = $this->tags->findTag($question->tag);
+					$parameters['postCount'] = $taglog->postCount + 1;
+					$this->tags->update($parameters);					
+	// Give feedback and redirect browser.				
 					$this->forum->AddFeedback('Ditt svar har sparats.');
          		$url = $this->url->create('forumdb/id/' . $question->id . '');
 					//	header('Refresh: 3; URL='. $url);
@@ -203,8 +211,6 @@ public function initialize()
      */
 	public function viewAction($tag = null)
 	{	  		  
-
-
 		  if (isset($tag)) {
 		  		$tag = urldecode($tag);
 		  	   $this->theme->setTitle("Kategori: " . $tag);
@@ -249,9 +255,11 @@ public function initialize()
      */
 	public function addAction($tag = null)
 	{
+				
 		if (!isset($tag)) {
 			$selectOptions = $this->tags->getTags();
 		} else {
+			$tag = urldecode($tag);
 			$selectOptions = array($tag => $tag);
 		}
 		if ($this->forum->userIsAuthenticated()) {
@@ -271,8 +279,8 @@ public function initialize()
 					],
 				  'tag' => [
     					'type' 		=> 'select',
-    					'class'		=> isset( $tag ) ? 'hidden' : '',
-    					'label' 		=> isset( $tag ) ? '' : 'välj kategori: ',
+    					'class'		=> isset( $tag ) ? 'hidden' 	: '',
+    					'label' 		=> isset( $tag ) ? '' 			: 'välj kategori: ',
     					'options' 	=> $selectOptions,
 
   					],
@@ -298,7 +306,7 @@ public function initialize()
 						]);
 						// log the question to tag table in questionCount
 						$taglog = $this->tags->findTag($form->Value('tag'));
-						$parameters['questionCount'] = $taglog->questionCount + 1;
+						$parameters['postCount'] = $taglog->postCount + 1;
 						$this->tags->update($parameters);
 						return true;
 					}
@@ -310,6 +318,7 @@ public function initialize()
 
 			if ($status === true) {
          // What to do if the form was submitted?
+         	$this->forum->resetTTL();
 				$this->forum->AddFeedback('Frågan har sparats.');
          	$url = $this->url->create('forumdb/view/' . $tag . '');
 				// header('Refresh: 3; URL='. $url);
@@ -317,6 +326,7 @@ public function initialize()
 
 			} else if ($status === false) {
       	// What to do when form could not be processed?
+      		$this->forum->resetTTL();
 				$this->forum->AddFeedback('Frågan kunde inte sparas.');
 				$url = $this->url->create('forumdb/add/' . $tag . '');
 				// header('Refresh: 3; URL='. $url);
