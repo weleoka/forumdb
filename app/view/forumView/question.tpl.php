@@ -5,6 +5,7 @@
 		}
 ?>
  <div class="commentAll">
+
         <div id="comment-<?=$question->id?>" class="commentUnit">
             <div class="commentBox">
                 <div class="gravatar">
@@ -43,7 +44,7 @@
         <?php elseif ($numberOfcomments == 1) : ?>
         				  Kommentarer (1).
         <?php else : ?>
-        				  kommentarer (<?php echo $numberOfcomments; ?>).
+        				  Kommentarer (<?php echo $numberOfcomments; ?>).
         <?php endif; ?>
         				  <div id="commentsDiv">
             		  		<?php foreach ($comments as $comment) : ?>
@@ -62,16 +63,5 @@
                 	  		<?php endforeach; ?>
                 	  </div>
 			 	</div>
-
-   	 <h3>
-        	<?php  if ($question->answerCount == 0) : ?>
-        	Inga svar.
-        	<?php elseif ($question->answerCount == 1) : ?>
-        	Ett svar.
-        	<?php else : ?>
-        	<?php echo $question->answerCount; ?>
-        	svar.
-        	<?php endif; ?>
-    	</h3>
         </div>
 </div>

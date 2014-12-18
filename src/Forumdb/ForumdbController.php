@@ -42,7 +42,7 @@ public function initialize()
    {
 		$this->forum = new \Weleoka\Forumdb\Forum();
       $this->forum->setDI($this->di);
-        	   
+
 	   $categories = $this->forum->forumTags();
 
 	   $i = 1;
@@ -52,7 +52,7 @@ public function initialize()
       						'url'   => 'forumdb/view/' . $category->tag,
       						'title' => $category->tag,
    			];
-		}	
+		}
 		return $out;
    }
 
@@ -74,7 +74,7 @@ public function initialize()
       	$this->views->add('kmom03/page1', [
 	    			'content' => $this->forum->topUsers(),
       	],'featured-2');
-      	
+
       	$this->views->add('kmom03/page1', [
 	    			'content' => '
 								<figure class="right">
@@ -95,30 +95,21 @@ public function initialize()
  */
 	public function idAction($id = null)
 	{
-	// Find the question by question ID and set windowbar title..
+	// Find the question by question ID and set windowbar title.
 			$question = $this->questions->find($id);
-			$taglog = $this->tags->findTag($question->tag);
-			dump ($taglog->questionCount + 1);
 			$this->theme->setTitle("Fråga: " . $question->title);
-	// Find the questionComments, then add question and questionComments to view..
-		   $all = $this->commentQs->query()
-            ->where('parentID = ?')
-            ->execute([$question->id]);
-			$comments = object_to_array($all);
+
+	// Add question and questionComments to view.
 			$url = $this->url->create('forumdb/view/' . $question->tag . '');
 			$this->views->add('forumView/question', [
 				'question' => $question,
-				'comments' => $comments,
+				'comments' => $this->commentQs->findCommentQ($question->id),
 				'title' => $question->title . ' från kategorin: <a href="' . $url . '">' . $question->tag . '</a>',
 			]);
 
-	// Find Answers to Question found above, then add answers to view.
-		   $all = $this->answers->query()
-            ->where('parentID = ?')
-            ->execute([$question->id]);
-			$answers = object_to_array($all);
+	// Add answers to view.
          $this->views->add('forumView/answers', [
-            'answers' => $answers,
+            'answers' => $this->answers->findAnswers($question->id),
             'title'	  => '',
          ]);
 
@@ -164,12 +155,10 @@ public function initialize()
 				$status = $form->check();
 
 				if ($status === true) {
-	// Update the total number of posts under forum tag.
-					$this->forum->resetTTL();				
-					$taglog = $this->tags->findTag($question->tag);
-					$parameters['postCount'] = $taglog->postCount + 1;
-					$this->tags->update($parameters);					
-	// Give feedback and redirect browser.				
+					$this->forum->resetTTL();
+	// Increase the total number of posts under forum tag.
+					$this->tags->increasePostCount($question->tag);					
+	// Give feedback and redirect browser.
 					$this->forum->AddFeedback('Ditt svar har sparats.');
          		$url = $this->url->create('forumdb/id/' . $question->id . '');
 					//	header('Refresh: 3; URL='. $url);
@@ -210,26 +199,25 @@ public function initialize()
      * @return void
      */
 	public function viewAction($tag = null)
-	{	  		  
+	{
 		  if (isset($tag)) {
 		  		$tag = urldecode($tag);
 		  	   $this->theme->setTitle("Kategori: " . $tag);
 				$all = $this->questions->getbyTag($tag);
             $category = $tag;
-    	  		$this->views->add('forumView/add', [        
+    	  		$this->views->add('forumView/add', [
         				'content' => null,
         				'tag'		=> $tag,
-    	  ]);            
-            
+    	  ]);
+
         } else {
         		$this->theme->setTitle("Alla Frågor");
-				$all = $this->questions->query()
-						->execute();
+				$all = $this->questions->findAllQs();
 				$category = "Allt";
-				$this->views->add('forumView/add', [        
+				$this->views->add('forumView/add', [
         				'content' => null,
         				'tag'		=> null,
-    	  ]);     
+    	  ]);
         }
     	  $array = object_to_array($all);
 
@@ -255,7 +243,7 @@ public function initialize()
      */
 	public function addAction($tag = null)
 	{
-				
+
 		if (!isset($tag)) {
 			$selectOptions = $this->tags->getTags();
 		} else {
@@ -289,10 +277,9 @@ public function initialize()
 						'class'		=> 'bigButton',
 						'callback'  => function($form) use ($tag){
 
-   // This logs the contribution and resets session TTL.
+   	// This logs the contribution to current user contributioncount.
    					$user = $this->forum->getUser();
 						$this->forum->userContributionLog($user);
-						$this->forum->resetTTL();
 
 						$this->questions->save([
 								'title'		=> $this->textFilter->doFilter($form->Value('title') , 'bbcode'),
@@ -304,28 +291,26 @@ public function initialize()
                         'tag'			=> $form->Value('tag'),
                         'answerCount'	=> 0,
 						]);
-						// log the question to tag table in questionCount
-						$taglog = $this->tags->findTag($form->Value('tag'));
-						$parameters['postCount'] = $taglog->postCount + 1;
-						$this->tags->update($parameters);
+      // Increase the total number of posts under forum tag.
+						$this->tags->increasePostCount($form->Value('tag'));	
 						return true;
 					}
 				],
 			]);
 
-			// Check the status of the form
+		// Check the status of the form
 			$status = $form->check();
 
 			if ($status === true) {
-         // What to do if the form was submitted?
          	$this->forum->resetTTL();
+		// Give feedback and redirect browser.
 				$this->forum->AddFeedback('Frågan har sparats.');
          	$url = $this->url->create('forumdb/view/' . $tag . '');
 				// header('Refresh: 3; URL='. $url);
 				$this->response->redirect($url);
 
 			} else if ($status === false) {
-      	// What to do when form could not be processed?
+      // What to do when form could not be processed?
       		$this->forum->resetTTL();
 				$this->forum->AddFeedback('Frågan kunde inte sparas.');
 				$url = $this->url->create('forumdb/add/' . $tag . '');
@@ -333,7 +318,7 @@ public function initialize()
 				$this->response->redirect($url);
 			}
 
-			//Here starts the rendering phase of the add action
+		//Here starts the rendering phase of the add action
 			$this->theme->setTitle("Skriv nytt inlägg");
 
 	      $this->views->add('kmom03/page1', [
@@ -370,7 +355,7 @@ public function initialize()
             'content'	=> $comment,
             'timestamp' => getTime(),
 			]);
-			
+
 			$this->forum->resetTTL();
 			$this->forum->AddFeedback('Din kommentar sparades.');
 			$url = $this->url->create('forumdb/id/' . $id . '');
@@ -401,7 +386,7 @@ public function initialize()
             'content'	=> $comment,
             'timestamp' => getTime(),
 			]);
-			
+
 			$this->forum->resetTTL();
 			$this->forum->AddFeedback('Din kommentar sparades.');
 			$url = $this->url->create('forumdb/id/' . $parent . '');

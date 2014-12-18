@@ -55,6 +55,14 @@ class Question extends \Weleoka\Forumdb\ForumdbModel
 	}
 	
 	
+	
+	public function findAllQs ()
+	{
+		return $this->query()
+						->execute();	
+	}
+	
+	
 	public function topQuestions()
 	{
 

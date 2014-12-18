@@ -5,7 +5,16 @@
 		}
 ?>
  <div class="commentAll">
-
+    	 <h3>
+        	<?php  if (count($answers) == 0) : ?>
+        	Inga svar.
+        	<?php elseif (count($answers) == 1) : ?>
+        	Ett svar.
+        	<?php else : ?>
+        	<?php echo count($answers); ?>
+        	svar.
+        	<?php endif; ?>
+    	</h3>
 
         <?php $i = 0; foreach ($answers as $answer) : ?>
 				<?php

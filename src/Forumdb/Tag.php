@@ -8,6 +8,24 @@ namespace Weleoka\Forumdb;
 class Tag extends \Weleoka\Forumdb\ForumdbModel
 {
 	
+	
+	
+/*
+ * Increase the number of posts, both questions and answers under certain tag.
+ *
+ * @param string
+ *
+ * @return void
+ */	
+	public function increasePostCount ($tag)
+	{	
+		$taglog = $this->findTag($tag);
+		$parameters['postCount'] = $taglog->postCount + 1;
+		$this->update($parameters);
+	}					
+					
+					
+					
 /*
  * Get list of tags into array.
  *
