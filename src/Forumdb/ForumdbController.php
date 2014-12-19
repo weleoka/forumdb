@@ -479,10 +479,6 @@ public function initialize()
 		  $this->views->add('kmom03/page1', [
 	    		'content' => $tagsHTML,
        		],'main');
-
-        $this->views->add('kmom03/page1', [
-	    		'content' => $this->forum->sidebarGen(),
-        ],'sidebar');
 	}
 
 

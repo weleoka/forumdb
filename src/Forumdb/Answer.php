@@ -15,7 +15,7 @@ class Answer extends \Weleoka\Forumdb\ForumdbModel
  * @return array
  */
  	public function findAnswers ($id)
- 	{	echo $id;
+ 	{	
  		$all = $this->query()
             ->where('parentID = ?')
             ->execute([$id]);
