@@ -1,6 +1,6 @@
 <?php
 
 return [
-    'dsn'     => "sqlite:.htsqlite.db",
-    'verbose' => true,
+    'dsn'		=> "sqlite:.htsqlite.db",
+    'verbose' 	=> true,
 ];

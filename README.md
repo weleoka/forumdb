@@ -41,7 +41,7 @@ v1.0
 
 ```
  .  
-..:  Copyright (c) 2013 - 2014 Kai Weeks, me@eeee.se
+..:  Copyright (c) 2013 - 2016 Kai Weeks, me@eeee.se
 ```
 
 

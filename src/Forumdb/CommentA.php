@@ -1,4 +1,5 @@
 <?php
+
 namespace Weleoka\Forumdb;
  
 /**
